@@ -16,7 +16,6 @@ const Index = () => {
   const { location, loading: locationLoading, refresh: refreshLocation } = useGeolocation();
 
   useEffect(() => {
-    // Load contacts from localStorage
     const savedContacts = localStorage.getItem('emergencyContacts');
     if (savedContacts) {
       setContacts(JSON.parse(savedContacts));
@@ -36,58 +35,68 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Header />
       
-      <main ref={mainRef} className="w-full max-w-lg mx-auto px-4 py-4 pb-8 space-y-6">
-        {/* Hero Section with SOS */}
-        <section className="text-center">
-          <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-1">Emergency SOS</h2>
-          <p className="text-muted-foreground text-xs sm:text-sm mb-4">
-            Hold the button for 2 seconds to trigger an emergency alert
-          </p>
+      <main ref={mainRef} className="w-full max-w-4xl mx-auto px-4 py-6 pb-8">
+        {/* Desktop: Two column layout, Mobile: Single column */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
-          <div className="flex justify-center">
-            <SOSButton location={location} contacts={contacts} />
+          {/* Left Column - Emergency Section */}
+          <div className="lg:col-span-5 space-y-6">
+            {/* SOS Section */}
+            <section className="bg-card rounded-2xl border border-border p-6 shadow-card">
+              <div className="text-center mb-4">
+                <h2 className="text-xl font-bold text-foreground mb-1">Emergency SOS</h2>
+                <p className="text-muted-foreground text-xs">
+                  Hold the button for 2 seconds to trigger alert
+                </p>
+              </div>
+              <div className="flex justify-center">
+                <SOSButton location={location} contacts={contacts} />
+              </div>
+            </section>
+
+            {/* Quick Actions */}
+            <section>
+              <QuickActions location={location} />
+            </section>
+
+            {/* Share Location */}
+            <section>
+              <ShareLocation location={location} contacts={contacts} />
+            </section>
+
+            {/* Media Recorder */}
+            <section>
+              <MediaRecorderComponent location={location} contacts={contacts} />
+            </section>
           </div>
-        </section>
 
-        {/* Quick Actions */}
-        <section>
-          <QuickActions location={location} />
-        </section>
+          {/* Right Column - Info & Contacts */}
+          <div className="lg:col-span-7 space-y-6">
+            {/* Location Display */}
+            <section>
+              <LocationDisplay 
+                location={location} 
+                loading={locationLoading}
+                onRefresh={refreshLocation}
+              />
+            </section>
 
-        {/* Share Location */}
-        <section>
-          <ShareLocation location={location} contacts={contacts} />
-        </section>
+            {/* Emergency Contacts */}
+            <section>
+              <ContactsManager contacts={contacts} setContacts={setContacts} />
+            </section>
 
-        {/* Media Recorder */}
-        <section>
-          <MediaRecorderComponent location={location} contacts={contacts} />
-        </section>
+            {/* Safety Tips */}
+            <section>
+              <SafetyTips />
+            </section>
+          </div>
+        </div>
 
-        {/* Location Display */}
-        <section>
-          <LocationDisplay 
-            location={location} 
-            loading={locationLoading}
-            onRefresh={refreshLocation}
-          />
-        </section>
-
-        {/* Emergency Contacts */}
-        <section>
-          <ContactsManager contacts={contacts} setContacts={setContacts} />
-        </section>
-
-        {/* Safety Tips */}
-        <section>
-          <SafetyTips />
-        </section>
-
-        {/* App Info Footer */}
-        <footer className="text-center text-sm text-muted-foreground py-4 border-t border-border">
+        {/* Footer */}
+        <footer className="text-center text-sm text-muted-foreground py-6 mt-8 border-t border-border">
           <p className="font-semibold text-foreground mb-1">SafeHer v1.0</p>
-          <p className="text-xs">Your safety is our priority.</p>
-          <p className="text-xs mt-1">Made with ❤️ for women's safety</p>
+          <p className="text-xs">Your safety is our priority • Made with ❤️ for women's safety</p>
         </footer>
       </main>
     </div>
