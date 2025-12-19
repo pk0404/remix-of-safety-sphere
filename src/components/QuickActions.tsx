@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
-import { Phone, MessageSquare, MapPin, Volume2, Camera, FileText } from 'lucide-react';
+import { Phone, MessageSquare, Volume2, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -74,31 +74,6 @@ const QuickActions = ({ location }: QuickActionsProps) => {
     }
   }, []);
 
-  const shareLocation = async () => {
-    if (!location) {
-      toast({
-        title: "Location Unavailable",
-        description: "Unable to share location. Please enable location services.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const text = `🚨 EMERGENCY - My current location:\nhttps://maps.google.com/?q=${location.latitude},${location.longitude}\n\nCoordinates: ${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`;
-    
-    if (navigator.share) {
-      try {
-        await navigator.share({ text });
-        toast({ title: "Location Shared", description: "Your location has been shared successfully." });
-      } catch (err) {
-        console.log('Share cancelled');
-      }
-    } else {
-      navigator.clipboard.writeText(text);
-      toast({ title: "Location Copied", description: "Location link copied to clipboard." });
-    }
-  };
-
   const triggerFakeCall = () => {
     toast({
       title: "📞 Incoming Call",
@@ -120,25 +95,6 @@ const QuickActions = ({ location }: QuickActionsProps) => {
       oscillator.start();
       setTimeout(() => oscillator.stop(), 2000);
     }, 5000);
-  };
-
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
-      toast({
-        title: "🎙️ Recording Started",
-        description: "Audio/video recording has been started. Evidence is being saved.",
-      });
-      
-      // In production, you'd save this stream to a file
-      console.log('Recording stream:', stream);
-    } catch (err) {
-      toast({
-        title: "Recording Failed",
-        description: "Could not access camera/microphone. Please grant permissions.",
-        variant: "destructive",
-      });
-    }
   };
 
   const triggerAlarm = () => {
@@ -207,26 +163,24 @@ const QuickActions = ({ location }: QuickActionsProps) => {
   const actions = [
     { icon: Phone, label: "Fake Call", color: "bg-success/10 text-success", action: triggerFakeCall },
     { icon: MessageSquare, label: "Quick SMS", color: "bg-primary/10 text-primary", action: () => setShowSMSDialog(true) },
-    { icon: MapPin, label: "Share Location", color: "bg-warning/10 text-warning", action: shareLocation },
     { icon: Volume2, label: isAlarmPlaying ? "Stop Alarm" : "Alarm", color: isAlarmPlaying ? "bg-emergency/20 text-emergency" : "bg-destructive/10 text-destructive", action: triggerAlarm },
-    { icon: Camera, label: "Record", color: "bg-accent-foreground/10 text-accent-foreground", action: startRecording },
     { icon: FileText, label: "Safety Guide", color: "bg-muted-foreground/10 text-muted-foreground", action: openSafetyGuide },
   ];
 
   return (
     <div className="w-full">
-      <h2 className="text-lg font-semibold text-foreground mb-4">Quick Actions</h2>
-      <div ref={containerRef} className="grid grid-cols-3 gap-3">
+      <h2 className="text-lg font-semibold text-foreground mb-3">Quick Actions</h2>
+      <div ref={containerRef} className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {actions.map((action, index) => (
           <button
             key={index}
             onClick={action.action}
-            className="flex flex-col items-center gap-2 p-4 bg-card rounded-xl border border-border shadow-card hover:shadow-soft transition-all duration-300 hover:-translate-y-1"
+            className="flex flex-col items-center gap-2 p-3 sm:p-4 bg-card rounded-xl border border-border shadow-card hover:shadow-soft transition-all duration-300 active:scale-95"
           >
-            <div className={`w-12 h-12 rounded-full ${action.color} flex items-center justify-center`}>
-              <action.icon className="w-5 h-5" />
+            <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full ${action.color} flex items-center justify-center`}>
+              <action.icon className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <span className="text-xs font-medium text-foreground">{action.label}</span>
+            <span className="text-[11px] sm:text-xs font-medium text-foreground text-center leading-tight">{action.label}</span>
           </button>
         ))}
       </div>

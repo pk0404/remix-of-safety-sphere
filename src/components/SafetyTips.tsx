@@ -90,24 +90,24 @@ const SafetyTips = () => {
       </div>
 
       {/* Emergency Numbers */}
-      <div className="mt-4 p-4 bg-destructive/5 rounded-xl border border-destructive/20">
-        <h3 className="font-semibold text-foreground text-sm mb-3">Emergency Numbers</h3>
-        <div className="grid grid-cols-2 gap-2 text-sm">
-          <a href="tel:100" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
-            <ChevronRight className="w-3 h-3" />
-            Police: 100
+      <div className="mt-3 p-3 bg-destructive/5 rounded-xl border border-destructive/20">
+        <h3 className="font-semibold text-foreground text-xs sm:text-sm mb-2">Emergency Numbers</h3>
+        <div className="grid grid-cols-2 gap-1.5 text-xs sm:text-sm">
+          <a href="tel:100" className="flex items-center gap-1.5 text-foreground hover:text-primary transition-colors py-1">
+            <ChevronRight className="w-3 h-3 shrink-0" />
+            <span>Police: 100</span>
           </a>
-          <a href="tel:1091" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
-            <ChevronRight className="w-3 h-3" />
-            Women Helpline: 1091
+          <a href="tel:1091" className="flex items-center gap-1.5 text-foreground hover:text-primary transition-colors py-1">
+            <ChevronRight className="w-3 h-3 shrink-0" />
+            <span>Women: 1091</span>
           </a>
-          <a href="tel:112" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
-            <ChevronRight className="w-3 h-3" />
-            Emergency: 112
+          <a href="tel:112" className="flex items-center gap-1.5 text-foreground hover:text-primary transition-colors py-1">
+            <ChevronRight className="w-3 h-3 shrink-0" />
+            <span>Emergency: 112</span>
           </a>
-          <a href="tel:181" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
-            <ChevronRight className="w-3 h-3" />
-            Women Safety: 181
+          <a href="tel:181" className="flex items-center gap-1.5 text-foreground hover:text-primary transition-colors py-1">
+            <ChevronRight className="w-3 h-3 shrink-0" />
+            <span>Safety: 181</span>
           </a>
         </div>
       </div>
