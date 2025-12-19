@@ -165,13 +165,13 @@ const SOSButton = ({ location, contacts }: SOSButtonProps) => {
   };
 
   return (
-    <div className="relative flex flex-col items-center">
+    <div className="relative flex flex-col items-center w-full">
       {/* Animated rings - centered on button */}
-      <div className="relative w-48 h-48 flex items-center justify-center">
+      <div className="relative w-40 h-40 sm:w-48 sm:h-48 flex items-center justify-center">
         <div ref={ringsRef} className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="absolute w-48 h-48 rounded-full border-2 border-emergency/30" />
-          <div className="absolute w-48 h-48 rounded-full border-2 border-emergency/30" />
-          <div className="absolute w-48 h-48 rounded-full border-2 border-emergency/30" />
+          <div className="absolute w-40 h-40 sm:w-48 sm:h-48 rounded-full border-2 border-emergency/30" />
+          <div className="absolute w-40 h-40 sm:w-48 sm:h-48 rounded-full border-2 border-emergency/30" />
+          <div className="absolute w-40 h-40 sm:w-48 sm:h-48 rounded-full border-2 border-emergency/30" />
         </div>
 
         {/* Main SOS Button */}
@@ -182,18 +182,18 @@ const SOSButton = ({ location, contacts }: SOSButtonProps) => {
           onMouseLeave={!isTriggered ? endHold : undefined}
           onTouchStart={!isTriggered ? startHold : undefined}
           onTouchEnd={!isTriggered ? endHold : undefined}
-          className={`absolute w-44 h-44 rounded-full gradient-emergency shadow-emergency flex flex-col items-center justify-center transition-all duration-300 ${isTriggered ? 'animate-pulse' : ''} ${isHolding ? 'ring-4 ring-emergency/50' : ''}`}
+          className={`absolute w-36 h-36 sm:w-44 sm:h-44 rounded-full gradient-emergency shadow-emergency flex flex-col items-center justify-center transition-all duration-300 ${isTriggered ? 'animate-pulse' : ''} ${isHolding ? 'ring-4 ring-emergency/50' : ''}`}
         >
           {isTriggered ? (
             <>
-              <span className="text-5xl font-bold text-primary-foreground">{countdown}</span>
-              <span className="text-primary-foreground/90 text-sm mt-1">Sending...</span>
+              <span className="text-4xl sm:text-5xl font-bold text-primary-foreground">{countdown}</span>
+              <span className="text-primary-foreground/90 text-xs sm:text-sm mt-1">Sending...</span>
             </>
           ) : (
             <>
-              <AlertTriangle className="w-12 h-12 text-primary-foreground mb-1" />
-              <span className="text-2xl font-bold text-primary-foreground">SOS</span>
-              <span className="text-primary-foreground/80 text-xs mt-1">Hold 2 seconds</span>
+              <AlertTriangle className="w-10 h-10 sm:w-12 sm:h-12 text-primary-foreground mb-1" />
+              <span className="text-xl sm:text-2xl font-bold text-primary-foreground">SOS</span>
+              <span className="text-primary-foreground/80 text-[10px] sm:text-xs mt-1">Hold 2 seconds</span>
             </>
           )}
         </button>
@@ -203,7 +203,7 @@ const SOSButton = ({ location, contacts }: SOSButtonProps) => {
       {isTriggered && (
         <button
           onClick={cancelSOS}
-          className="mt-6 px-6 py-3 bg-card border border-border rounded-full text-foreground font-medium hover:bg-muted transition-colors animate-fade-in"
+          className="mt-4 px-5 py-2.5 bg-card border border-border rounded-full text-foreground text-sm font-medium hover:bg-muted transition-colors animate-fade-in"
         >
           Cancel Alert
         </button>
@@ -211,19 +211,19 @@ const SOSButton = ({ location, contacts }: SOSButtonProps) => {
 
       {/* Message Settings & Quick call */}
       {!isTriggered && (
-        <div className="flex flex-col items-center gap-3 mt-6">
+        <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 mt-4 w-full max-w-xs">
           <button
             onClick={() => setShowMessageDialog(true)}
-            className="px-4 py-2 text-sm bg-muted/50 border border-border rounded-full text-muted-foreground hover:bg-muted transition-colors"
+            className="w-full sm:w-auto px-4 py-2 text-xs sm:text-sm bg-muted/50 border border-border rounded-full text-muted-foreground hover:bg-muted transition-colors"
           >
-            Configure Alert Message
+            Configure Message
           </button>
           <a
             href="tel:100"
-            className="flex items-center gap-2 px-6 py-3 bg-card border border-border rounded-full text-foreground font-medium hover:bg-muted transition-colors"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-card border border-border rounded-full text-foreground text-sm font-medium hover:bg-muted transition-colors"
           >
             <Phone className="w-4 h-4" />
-            Call Police (100)
+            Call Police
           </a>
         </div>
       )}

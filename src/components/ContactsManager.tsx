@@ -159,29 +159,29 @@ const ContactsManager = ({ contacts, setContacts }: ContactsManagerProps) => {
         </Dialog>
       </div>
 
-      <div ref={containerRef} className="space-y-3">
+      <div ref={containerRef} className="space-y-2">
         {contacts.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <User className="w-12 h-12 mx-auto mb-2 opacity-50" />
-            <p>No emergency contacts added</p>
-            <p className="text-sm">Add contacts who will be notified in emergencies</p>
+          <div className="text-center py-6 text-muted-foreground">
+            <User className="w-10 h-10 mx-auto mb-2 opacity-50" />
+            <p className="text-sm">No emergency contacts added</p>
+            <p className="text-xs">Add contacts who will be notified</p>
           </div>
         ) : (
           contacts.map((contact) => (
             <div
               key={contact.id}
-              className="flex items-center justify-between p-4 bg-card rounded-xl border border-border shadow-card"
+              className="flex items-center justify-between p-3 bg-card rounded-xl border border-border shadow-card"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-9 h-9 shrink-0 rounded-full bg-accent flex items-center justify-center">
                   {getRelationshipIcon(contact.relationship)}
                 </div>
-                <div>
-                  <p className="font-medium text-foreground">{contact.name}</p>
-                  <p className="text-sm text-muted-foreground capitalize">{contact.relationship}</p>
+                <div className="min-w-0">
+                  <p className="font-medium text-foreground text-sm truncate">{contact.name}</p>
+                  <p className="text-xs text-muted-foreground capitalize">{contact.relationship}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 shrink-0">
                 <a
                   href={`tel:${contact.phone}`}
                   className="p-2 rounded-full bg-success/10 text-success hover:bg-success/20 transition-colors"

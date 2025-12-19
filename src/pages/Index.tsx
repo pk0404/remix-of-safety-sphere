@@ -6,6 +6,8 @@ import ContactsManager, { Contact } from '@/components/ContactsManager';
 import LocationDisplay from '@/components/LocationDisplay';
 import QuickActions from '@/components/QuickActions';
 import SafetyTips from '@/components/SafetyTips';
+import ShareLocation from '@/components/ShareLocation';
+import MediaRecorderComponent from '@/components/MediaRecorder';
 import useGeolocation from '@/hooks/useGeolocation';
 
 const Index = () => {
@@ -34,28 +36,36 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Header />
       
-      <main ref={mainRef} className="container mx-auto px-4 py-6 pb-24">
+      <main ref={mainRef} className="w-full max-w-lg mx-auto px-4 py-4 pb-8 space-y-6">
         {/* Hero Section with SOS */}
-        <section className="mb-8">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-foreground mb-2">Emergency SOS</h2>
-            <p className="text-muted-foreground text-sm">
-              Hold the button for 2 seconds to trigger an emergency alert
-            </p>
-          </div>
+        <section className="text-center">
+          <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-1">Emergency SOS</h2>
+          <p className="text-muted-foreground text-xs sm:text-sm mb-4">
+            Hold the button for 2 seconds to trigger an emergency alert
+          </p>
           
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-center">
             <SOSButton location={location} contacts={contacts} />
           </div>
         </section>
 
         {/* Quick Actions */}
-        <section className="mb-8">
+        <section>
           <QuickActions location={location} />
         </section>
 
+        {/* Share Location */}
+        <section>
+          <ShareLocation location={location} contacts={contacts} />
+        </section>
+
+        {/* Media Recorder */}
+        <section>
+          <MediaRecorderComponent location={location} contacts={contacts} />
+        </section>
+
         {/* Location Display */}
-        <section className="mb-8">
+        <section>
           <LocationDisplay 
             location={location} 
             loading={locationLoading}
@@ -64,25 +74,22 @@ const Index = () => {
         </section>
 
         {/* Emergency Contacts */}
-        <section className="mb-8">
+        <section>
           <ContactsManager contacts={contacts} setContacts={setContacts} />
         </section>
 
         {/* Safety Tips */}
-        <section className="mb-8">
+        <section>
           <SafetyTips />
         </section>
 
         {/* App Info Footer */}
-        <section className="text-center text-sm text-muted-foreground py-6 border-t border-border">
+        <footer className="text-center text-sm text-muted-foreground py-4 border-t border-border">
           <p className="font-semibold text-foreground mb-1">SafeHer v1.0</p>
-          <p>Your safety is our priority.</p>
-          <p className="text-xs mt-2">Made with ❤️ for women's safety</p>
-        </section>
+          <p className="text-xs">Your safety is our priority.</p>
+          <p className="text-xs mt-1">Made with ❤️ for women's safety</p>
+        </footer>
       </main>
-
-      {/* Bottom Safe Area Spacer */}
-      <div className="h-safe-area-bottom" />
     </div>
   );
 };
