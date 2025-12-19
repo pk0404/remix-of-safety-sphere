@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import gsap from 'gsap';
-import LoadingScreen from '@/components/LoadingScreen';
 import Header from '@/components/Header';
 import SOSButton from '@/components/SOSButton';
 import ContactsManager, { Contact } from '@/components/ContactsManager';
@@ -10,7 +9,6 @@ import SafetyTips from '@/components/SafetyTips';
 import useGeolocation from '@/hooks/useGeolocation';
 
 const Index = () => {
-  const [isLoading, setIsLoading] = useState(true);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const mainRef = useRef<HTMLDivElement>(null);
   const { location, loading: locationLoading, refresh: refreshLocation } = useGeolocation();
@@ -24,17 +22,13 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
-    if (!isLoading && mainRef.current) {
+    if (mainRef.current) {
       gsap.fromTo(mainRef.current,
         { opacity: 0 },
         { opacity: 1, duration: 0.5, ease: "power2.out" }
       );
     }
-  }, [isLoading]);
-
-  if (isLoading) {
-    return <LoadingScreen onComplete={() => setIsLoading(false)} />;
-  }
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">

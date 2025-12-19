@@ -43,8 +43,8 @@ const useGeolocation = (): UseGeolocationReturn => {
       },
       {
         enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 60000,
+        timeout: 15000,
+        maximumAge: 0, // Always get fresh location
       }
     );
   }, []);
@@ -52,7 +52,7 @@ const useGeolocation = (): UseGeolocationReturn => {
   useEffect(() => {
     getLocation();
 
-    // Watch position for real-time updates
+    // Watch position for real-time updates with high accuracy
     const watchId = navigator.geolocation.watchPosition(
       (position) => {
         setLocation({
@@ -66,8 +66,8 @@ const useGeolocation = (): UseGeolocationReturn => {
       },
       {
         enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 30000,
+        timeout: 15000,
+        maximumAge: 0, // No caching for accuracy
       }
     );
 
