@@ -1,1 +1,4 @@
 project_id = "kcwibsbtquhbqngjcdbe"
+
+[functions.safety-analysis]
+verify_jwt = false
