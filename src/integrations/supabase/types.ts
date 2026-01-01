@@ -14,7 +14,281 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      emergency_contacts: {
+        Row: {
+          created_at: string
+          id: string
+          is_primary: boolean | null
+          name: string
+          phone: string
+          relationship: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_primary?: boolean | null
+          name: string
+          phone: string
+          relationship?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_primary?: boolean | null
+          name?: string
+          phone?: string
+          relationship?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      evidence: {
+        Row: {
+          captured_at: string
+          duration_seconds: number | null
+          file_size: number | null
+          file_url: string
+          id: string
+          incident_id: string | null
+          latitude: number | null
+          longitude: number | null
+          media_type: string
+          user_id: string
+        }
+        Insert: {
+          captured_at?: string
+          duration_seconds?: number | null
+          file_size?: number | null
+          file_url: string
+          id?: string
+          incident_id?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          media_type: string
+          user_id: string
+        }
+        Update: {
+          captured_at?: string
+          duration_seconds?: number | null
+          file_size?: number | null
+          file_url?: string
+          id?: string
+          incident_id?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          media_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evidence_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      incidents: {
+        Row: {
+          address: string | null
+          altitude: number | null
+          created_at: string
+          id: string
+          incident_type: Database["public"]["Enums"]["incident_type"]
+          latitude: number | null
+          longitude: number | null
+          message: string | null
+          resolved_at: string | null
+          status: Database["public"]["Enums"]["incident_status"]
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          altitude?: number | null
+          created_at?: string
+          id?: string
+          incident_type?: Database["public"]["Enums"]["incident_type"]
+          latitude?: number | null
+          longitude?: number | null
+          message?: string | null
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["incident_status"]
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          altitude?: number | null
+          created_at?: string
+          id?: string
+          incident_type?: Database["public"]["Enums"]["incident_type"]
+          latitude?: number | null
+          longitude?: number | null
+          message?: string | null
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["incident_status"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      journeys: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          destination_lat: number | null
+          destination_lng: number | null
+          destination_name: string | null
+          expected_arrival: string | null
+          id: string
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          destination_lat?: number | null
+          destination_lng?: number | null
+          destination_name?: string | null
+          expected_arrival?: string | null
+          id?: string
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          destination_lat?: number | null
+          destination_lng?: number | null
+          destination_name?: string | null
+          expected_arrival?: string | null
+          id?: string
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          allergies: string[] | null
+          avatar_url: string | null
+          blood_group: string | null
+          created_at: string
+          emergency_message: string | null
+          full_name: string | null
+          id: string
+          medical_conditions: string[] | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          allergies?: string[] | null
+          avatar_url?: string | null
+          blood_group?: string | null
+          created_at?: string
+          emergency_message?: string | null
+          full_name?: string | null
+          id: string
+          medical_conditions?: string[] | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          allergies?: string[] | null
+          avatar_url?: string | null
+          blood_group?: string | null
+          created_at?: string
+          emergency_message?: string | null
+          full_name?: string | null
+          id?: string
+          medical_conditions?: string[] | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      safe_locations: {
+        Row: {
+          address: string | null
+          created_at: string
+          id: string
+          is_verified: boolean | null
+          latitude: number
+          location_type: string
+          longitude: number
+          name: string
+          phone: string | null
+          user_id: string | null
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          id?: string
+          is_verified?: boolean | null
+          latitude: number
+          location_type: string
+          longitude: number
+          name: string
+          phone?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          id?: string
+          is_verified?: boolean | null
+          latitude?: number
+          location_type?: string
+          longitude?: number
+          name?: string
+          phone?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          auto_record_on_sos: boolean | null
+          countdown_duration: number | null
+          countdown_sound: boolean | null
+          created_at: string
+          id: string
+          shake_to_sos: boolean | null
+          silent_mode: boolean | null
+          trigger_words: string[] | null
+          updated_at: string
+          user_id: string
+          voice_activation: boolean | null
+        }
+        Insert: {
+          auto_record_on_sos?: boolean | null
+          countdown_duration?: number | null
+          countdown_sound?: boolean | null
+          created_at?: string
+          id?: string
+          shake_to_sos?: boolean | null
+          silent_mode?: boolean | null
+          trigger_words?: string[] | null
+          updated_at?: string
+          user_id: string
+          voice_activation?: boolean | null
+        }
+        Update: {
+          auto_record_on_sos?: boolean | null
+          countdown_duration?: number | null
+          countdown_sound?: boolean | null
+          created_at?: string
+          id?: string
+          shake_to_sos?: boolean | null
+          silent_mode?: boolean | null
+          trigger_words?: string[] | null
+          updated_at?: string
+          user_id?: string
+          voice_activation?: boolean | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +297,15 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      incident_status: "active" | "resolved" | "cancelled" | "pending"
+      incident_type:
+        | "sos"
+        | "medical"
+        | "fire"
+        | "assault"
+        | "accident"
+        | "natural_disaster"
+        | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +432,17 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      incident_status: ["active", "resolved", "cancelled", "pending"],
+      incident_type: [
+        "sos",
+        "medical",
+        "fire",
+        "assault",
+        "accident",
+        "natural_disaster",
+        "other",
+      ],
+    },
   },
 } as const
