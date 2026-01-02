@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.4fd2c86d2d164b24a76f1edb6c1e5918',
+  appId: 'com.safetysphere.app',
   appName: 'Safety Sphere',
   webDir: 'dist',
   server: {
