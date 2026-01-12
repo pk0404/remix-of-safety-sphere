@@ -9,6 +9,10 @@ import QuickActions from '@/components/QuickActions';
 import SafetyTips from '@/components/SafetyTips';
 import ShareLocation from '@/components/ShareLocation';
 import MediaRecorderComponent from '@/components/MediaRecorder';
+import AudioRecorderComponent from '@/components/AudioRecorder';
+import NearbyPlaces from '@/components/NearbyPlaces';
+import JourneyTracker from '@/components/JourneyTracker';
+import AISafetyAssistant from '@/components/AISafetyAssistant';
 import useGeolocation from '@/hooks/useGeolocation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEmergencyContacts } from '@/hooks/useEmergencyContacts';
@@ -147,10 +151,25 @@ const Index = () => {
             <section>
               <MediaRecorderComponent location={location} contacts={formattedContacts} />
             </section>
+
+            {/* Audio Recorder */}
+            <section>
+              <AudioRecorderComponent location={location} contacts={formattedContacts} />
+            </section>
+
+            {/* Journey Tracker */}
+            <section>
+              <JourneyTracker location={location} contacts={formattedContacts} />
+            </section>
           </div>
 
           {/* Right Column - Info & Contacts */}
           <div className="lg:col-span-7 space-y-6">
+            {/* AI Safety Assistant */}
+            <section>
+              <AISafetyAssistant location={location} />
+            </section>
+
             {/* Location Display */}
             <section>
               <LocationDisplay 
@@ -158,6 +177,11 @@ const Index = () => {
                 loading={locationLoading}
                 onRefresh={refreshLocation}
               />
+            </section>
+
+            {/* Nearby Safety Locations */}
+            <section>
+              <NearbyPlaces location={location} />
             </section>
 
             {/* Emergency Contacts */}

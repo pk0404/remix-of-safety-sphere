@@ -33,8 +33,13 @@ serve(async (req) => {
         break;
       
       case 'safety_tips':
-        systemPrompt = `You are a personal safety expert. Provide practical safety tips based on the context. Be specific and actionable.`;
-        userPrompt = `Provide 5 safety tips for: ${data.context}`;
+        systemPrompt = `You are a personal safety expert. Provide practical, actionable safety advice. Be concise but thorough. Format your response in clear paragraphs.`;
+        userPrompt = `Provide safety tips and advice for this situation: ${data.context}. ${data.location ? `User's location: ${data.location}` : ''}`;
+        break;
+
+      case 'nearby_places':
+        systemPrompt = `You are a safety location advisor. Return a JSON array of nearby safety locations. Each object should have: name (string), type (police/hospital/fire_station/safe_zone), distance (string like "0.5 km"), phone (emergency number). Return exactly 5 places.`;
+        userPrompt = `List 5 nearby safety locations (police stations, hospitals, fire stations, safe zones) near coordinates: ${data.latitude}, ${data.longitude}. Return as JSON array only.`;
         break;
       
       default:
