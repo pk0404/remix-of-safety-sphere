@@ -13,6 +13,10 @@ import AudioRecorderComponent from '@/components/AudioRecorder';
 import NearbyPlaces from '@/components/NearbyPlaces';
 import JourneyTracker from '@/components/JourneyTracker';
 import AISafetyAssistant from '@/components/AISafetyAssistant';
+import CheckInSystem from '@/components/CheckInSystem';
+import SafetyAnalyticsDashboard from '@/components/SafetyAnalyticsDashboard';
+import IncidentMap from '@/components/IncidentMap';
+import OfflineIndicator from '@/components/OfflineIndicator';
 import useGeolocation from '@/hooks/useGeolocation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEmergencyContacts } from '@/hooks/useEmergencyContacts';
@@ -161,6 +165,11 @@ const Index = () => {
             <section>
               <JourneyTracker location={location} contacts={formattedContacts} />
             </section>
+
+            {/* Check-In System */}
+            <section>
+              <CheckInSystem location={location} />
+            </section>
           </div>
 
           {/* Right Column - Info & Contacts */}
@@ -168,6 +177,16 @@ const Index = () => {
             {/* AI Safety Assistant */}
             <section>
               <AISafetyAssistant location={location} />
+            </section>
+
+            {/* Safety Analytics Dashboard */}
+            <section>
+              <SafetyAnalyticsDashboard />
+            </section>
+
+            {/* Incident Map */}
+            <section>
+              <IncidentMap location={location} />
             </section>
 
             {/* Location Display */}
@@ -205,6 +224,9 @@ const Index = () => {
           <p className="text-xs">Your safety is our priority • Powered by AI</p>
         </footer>
       </main>
+
+      {/* Offline Indicator */}
+      <OfflineIndicator />
     </div>
   );
 };

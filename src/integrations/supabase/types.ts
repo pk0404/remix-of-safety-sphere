@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      check_ins: {
+        Row: {
+          checked_in_at: string
+          created_at: string
+          id: string
+          location_lat: number | null
+          location_lng: number | null
+          next_check_in_due: string | null
+          notes: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          checked_in_at?: string
+          created_at?: string
+          id?: string
+          location_lat?: number | null
+          location_lng?: number | null
+          next_check_in_due?: string | null
+          notes?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          checked_in_at?: string
+          created_at?: string
+          id?: string
+          location_lat?: number | null
+          location_lng?: number | null
+          next_check_in_due?: string | null
+          notes?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       emergency_contacts: {
         Row: {
           created_at: string
@@ -91,6 +127,45 @@ export type Database = {
           },
         ]
       }
+      incident_reports: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          incident_type: string
+          is_verified: boolean | null
+          latitude: number
+          longitude: number
+          reported_at: string
+          severity: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          incident_type: string
+          is_verified?: boolean | null
+          latitude: number
+          longitude: number
+          reported_at?: string
+          severity?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          incident_type?: string
+          is_verified?: boolean | null
+          latitude?: number
+          longitude?: number
+          reported_at?: string
+          severity?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       incidents: {
         Row: {
           address: string | null
@@ -165,6 +240,36 @@ export type Database = {
           expected_arrival?: string | null
           id?: string
           status?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      offline_sync_queue: {
+        Row: {
+          action_type: string
+          created_at: string
+          id: string
+          payload: Json
+          synced: boolean | null
+          synced_at: string | null
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          created_at?: string
+          id?: string
+          payload: Json
+          synced?: boolean | null
+          synced_at?: string | null
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          id?: string
+          payload?: Json
+          synced?: boolean | null
+          synced_at?: string | null
           user_id?: string
         }
         Relationships: []
@@ -247,13 +352,43 @@ export type Database = {
         }
         Relationships: []
       }
+      safety_analytics: {
+        Row: {
+          id: string
+          metadata: Json | null
+          metric_type: string
+          metric_value: number | null
+          recorded_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          metadata?: Json | null
+          metric_type: string
+          metric_value?: number | null
+          recorded_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          metadata?: Json | null
+          metric_type?: string
+          metric_value?: number | null
+          recorded_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_settings: {
         Row: {
           auto_record_on_sos: boolean | null
+          check_in_enabled: boolean | null
+          check_in_interval: number | null
           countdown_duration: number | null
           countdown_sound: boolean | null
           created_at: string
           id: string
+          missed_check_in_alert: boolean | null
           shake_to_sos: boolean | null
           silent_mode: boolean | null
           trigger_words: string[] | null
@@ -263,10 +398,13 @@ export type Database = {
         }
         Insert: {
           auto_record_on_sos?: boolean | null
+          check_in_enabled?: boolean | null
+          check_in_interval?: number | null
           countdown_duration?: number | null
           countdown_sound?: boolean | null
           created_at?: string
           id?: string
+          missed_check_in_alert?: boolean | null
           shake_to_sos?: boolean | null
           silent_mode?: boolean | null
           trigger_words?: string[] | null
@@ -276,10 +414,13 @@ export type Database = {
         }
         Update: {
           auto_record_on_sos?: boolean | null
+          check_in_enabled?: boolean | null
+          check_in_interval?: number | null
           countdown_duration?: number | null
           countdown_sound?: boolean | null
           created_at?: string
           id?: string
+          missed_check_in_alert?: boolean | null
           shake_to_sos?: boolean | null
           silent_mode?: boolean | null
           trigger_words?: string[] | null
