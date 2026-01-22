@@ -28,10 +28,11 @@ export const useEvidenceUpload = () => {
     try {
       const timestamp = Date.now();
       const extension = params.mediaType === 'photo' ? 'jpg' : params.mediaType === 'video' ? 'webm' : 'webm';
+      // Store path with user_id prefix for RLS and organization
       const fileName = `${user.id}/${timestamp}_${params.mediaType}.${extension}`;
 
       // Upload to storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('evidence')
         .upload(fileName, params.file, {
           cacheControl: '3600',
@@ -42,19 +43,16 @@ export const useEvidenceUpload = () => {
 
       setProgress(50);
 
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from('evidence')
-        .getPublicUrl(fileName);
-
-      // Create evidence record
+      // SECURITY FIX: Store only the file path, not a public URL
+      // This allows us to generate time-limited signed URLs when viewing
+      // instead of permanent public URLs that could be leaked
       const { data: evidenceData, error: evidenceError } = await supabase
         .from('evidence')
         .insert({
           user_id: user.id,
           incident_id: params.incidentId,
           media_type: params.mediaType,
-          file_url: urlData.publicUrl,
+          file_url: fileName, // Store path only, not full URL
           file_size: params.file.size,
           latitude: params.latitude,
           longitude: params.longitude,
