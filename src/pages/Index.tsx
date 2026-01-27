@@ -4,10 +4,8 @@ import gsap from 'gsap';
 import Header from '@/components/Header';
 import SOSButton from '@/components/SOSButton';
 import ContactsManager from '@/components/ContactsManager';
-import LocationDisplay from '@/components/LocationDisplay';
 import QuickActions from '@/components/QuickActions';
 import SafetyTips from '@/components/SafetyTips';
-import ShareLocation from '@/components/ShareLocation';
 import MediaRecorderComponent from '@/components/MediaRecorder';
 import AudioRecorderComponent from '@/components/AudioRecorder';
 import JourneyTracker from '@/components/JourneyTracker';
@@ -18,6 +16,9 @@ import SafetyMapReal from '@/components/SafetyMapReal';
 import NearbyPlacesMap from '@/components/NearbyPlacesMap';
 import GoogleMapsProvider from '@/components/GoogleMapsProvider';
 import OfflineIndicator from '@/components/OfflineIndicator';
+import EmergencyNumbers from '@/components/EmergencyNumbers';
+import LiveLocation from '@/components/LiveLocation';
+import SupportRequestButton from '@/components/volunteer/SupportRequestButton';
 import useGeolocation from '@/hooks/useGeolocation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEmergencyContacts } from '@/hooks/useEmergencyContacts';
@@ -25,7 +26,7 @@ import { useUserSettings } from '@/hooks/useUserSettings';
 import { useShakeDetection } from '@/hooks/useShakeDetection';
 import { useVoiceActivation } from '@/hooks/useVoiceActivation';
 import { Button } from '@/components/ui/button';
-import { LogIn, Shield } from 'lucide-react';
+import { LogIn, Shield, Users } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Index = () => {
@@ -148,14 +149,37 @@ const Index = () => {
                 <QuickActions location={location} />
               </section>
 
-              {/* Share Location */}
+              {/* Live Location (merged share + display) */}
               <section>
-                <ShareLocation location={location} contacts={formattedContacts} />
+                <LiveLocation 
+                  location={location} 
+                  loading={locationLoading}
+                  onRefresh={refreshLocation}
+                  contacts={formattedContacts}
+                />
               </section>
 
-              {/* Media Recorder */}
+              {/* Volunteer Support Request */}
               <section>
-                <MediaRecorderComponent location={location} contacts={formattedContacts} />
+                <SupportRequestButton variant="compact" />
+              </section>
+
+              {/* Volunteer Network Link */}
+              <section className="p-4 bg-card rounded-2xl border border-border shadow-card">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Users className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground">Volunteer Network</p>
+                      <p className="text-xs text-muted-foreground">Join or request support</p>
+                    </div>
+                  </div>
+                  <Button size="sm" onClick={() => navigate('/volunteers')}>
+                    Open
+                  </Button>
+                </div>
               </section>
 
               {/* Audio Recorder */}
@@ -186,13 +210,9 @@ const Index = () => {
                 <NearbyPlacesMap location={location} />
               </section>
 
-              {/* Location Display */}
+              {/* Emergency Numbers - Fully Developed */}
               <section>
-                <LocationDisplay 
-                  location={location} 
-                  loading={locationLoading}
-                  onRefresh={refreshLocation}
-                />
+                <EmergencyNumbers />
               </section>
             </div>
 

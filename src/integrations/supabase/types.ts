@@ -379,6 +379,54 @@ export type Database = {
         }
         Relationships: []
       }
+      support_requests: {
+        Row: {
+          address: string | null
+          created_at: string
+          description: string | null
+          id: string
+          latitude: number
+          longitude: number
+          request_type: string
+          requester_id: string
+          requester_name: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          urgency: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          latitude: number
+          longitude: number
+          request_type?: string
+          requester_id: string
+          requester_name?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          urgency?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          latitude?: number
+          longitude?: number
+          request_type?: string
+          requester_id?: string
+          requester_name?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          urgency?: string
+        }
+        Relationships: []
+      }
       user_settings: {
         Row: {
           auto_record_on_sos: boolean | null
@@ -427,6 +475,173 @@ export type Database = {
           updated_at?: string
           user_id?: string
           voice_activation?: boolean | null
+        }
+        Relationships: []
+      }
+      volunteer_alerts: {
+        Row: {
+          distance_km: number | null
+          id: string
+          responded_at: string | null
+          response: string | null
+          sent_at: string
+          status: string
+          support_request_id: string
+          viewed_at: string | null
+          volunteer_id: string
+        }
+        Insert: {
+          distance_km?: number | null
+          id?: string
+          responded_at?: string | null
+          response?: string | null
+          sent_at?: string
+          status?: string
+          support_request_id: string
+          viewed_at?: string | null
+          volunteer_id: string
+        }
+        Update: {
+          distance_km?: number | null
+          id?: string
+          responded_at?: string | null
+          response?: string | null
+          sent_at?: string
+          status?: string
+          support_request_id?: string
+          viewed_at?: string | null
+          volunteer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "volunteer_alerts_support_request_id_fkey"
+            columns: ["support_request_id"]
+            isOneToOne: false
+            referencedRelation: "support_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "volunteer_alerts_volunteer_id_fkey"
+            columns: ["volunteer_id"]
+            isOneToOne: false
+            referencedRelation: "volunteers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      volunteer_analytics: {
+        Row: {
+          id: string
+          metadata: Json | null
+          metric_type: string
+          metric_value: number | null
+          recorded_at: string
+        }
+        Insert: {
+          id?: string
+          metadata?: Json | null
+          metric_type: string
+          metric_value?: number | null
+          recorded_at?: string
+        }
+        Update: {
+          id?: string
+          metadata?: Json | null
+          metric_type?: string
+          metric_value?: number | null
+          recorded_at?: string
+        }
+        Relationships: []
+      }
+      volunteer_locations: {
+        Row: {
+          accuracy: number | null
+          id: string
+          latitude: number
+          longitude: number
+          recorded_at: string
+          volunteer_id: string
+        }
+        Insert: {
+          accuracy?: number | null
+          id?: string
+          latitude: number
+          longitude: number
+          recorded_at?: string
+          volunteer_id: string
+        }
+        Update: {
+          accuracy?: number | null
+          id?: string
+          latitude?: number
+          longitude?: number
+          recorded_at?: string
+          volunteer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "volunteer_locations_volunteer_id_fkey"
+            columns: ["volunteer_id"]
+            isOneToOne: false
+            referencedRelation: "volunteers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      volunteers: {
+        Row: {
+          average_response_time_seconds: number | null
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          is_available: boolean | null
+          last_location_update: string | null
+          location_lat: number | null
+          location_lng: number | null
+          notification_radius_km: number | null
+          phone: string
+          rating: number | null
+          total_responses: number | null
+          updated_at: string
+          user_id: string
+          verified: boolean | null
+        }
+        Insert: {
+          average_response_time_seconds?: number | null
+          created_at?: string
+          email?: string | null
+          full_name: string
+          id?: string
+          is_available?: boolean | null
+          last_location_update?: string | null
+          location_lat?: number | null
+          location_lng?: number | null
+          notification_radius_km?: number | null
+          phone: string
+          rating?: number | null
+          total_responses?: number | null
+          updated_at?: string
+          user_id: string
+          verified?: boolean | null
+        }
+        Update: {
+          average_response_time_seconds?: number | null
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          is_available?: boolean | null
+          last_location_update?: string | null
+          location_lat?: number | null
+          location_lng?: number | null
+          notification_radius_km?: number | null
+          phone?: string
+          rating?: number | null
+          total_responses?: number | null
+          updated_at?: string
+          user_id?: string
+          verified?: boolean | null
         }
         Relationships: []
       }
