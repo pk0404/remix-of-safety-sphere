@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Settings from "./pages/Settings";
 import Notifications from "./pages/Notifications";
 import Volunteers from "./pages/Volunteers";
+import Documentation from "./pages/Documentation";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/settings" element={<Settings />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/volunteers" element={<Volunteers />} />
+            <Route path="/documentation" element={<Documentation />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
