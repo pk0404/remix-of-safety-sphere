@@ -127,6 +127,87 @@ export type Database = {
           },
         ]
       }
+      help_sessions: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          distance_km: number | null
+          feedback: string | null
+          id: string
+          otp_code: string
+          otp_verified: boolean | null
+          points_earned: number | null
+          rating: number | null
+          requester_id: string
+          requester_lat: number | null
+          requester_lng: number | null
+          response_time_seconds: number | null
+          started_at: string | null
+          status: string
+          support_request_id: string
+          volunteer_id: string
+          volunteer_lat: number | null
+          volunteer_lng: number | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          distance_km?: number | null
+          feedback?: string | null
+          id?: string
+          otp_code: string
+          otp_verified?: boolean | null
+          points_earned?: number | null
+          rating?: number | null
+          requester_id: string
+          requester_lat?: number | null
+          requester_lng?: number | null
+          response_time_seconds?: number | null
+          started_at?: string | null
+          status?: string
+          support_request_id: string
+          volunteer_id: string
+          volunteer_lat?: number | null
+          volunteer_lng?: number | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          distance_km?: number | null
+          feedback?: string | null
+          id?: string
+          otp_code?: string
+          otp_verified?: boolean | null
+          points_earned?: number | null
+          rating?: number | null
+          requester_id?: string
+          requester_lat?: number | null
+          requester_lng?: number | null
+          response_time_seconds?: number | null
+          started_at?: string | null
+          status?: string
+          support_request_id?: string
+          volunteer_id?: string
+          volunteer_lat?: number | null
+          volunteer_lng?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "help_sessions_support_request_id_fkey"
+            columns: ["support_request_id"]
+            isOneToOne: false
+            referencedRelation: "support_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "help_sessions_volunteer_id_fkey"
+            columns: ["volunteer_id"]
+            isOneToOne: false
+            referencedRelation: "volunteers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       incident_reports: {
         Row: {
           created_at: string
@@ -588,20 +669,65 @@ export type Database = {
           },
         ]
       }
+      volunteer_rewards: {
+        Row: {
+          created_at: string | null
+          help_session_id: string | null
+          id: string
+          points: number
+          reason: string
+          volunteer_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          help_session_id?: string | null
+          id?: string
+          points: number
+          reason: string
+          volunteer_id: string
+        }
+        Update: {
+          created_at?: string | null
+          help_session_id?: string | null
+          id?: string
+          points?: number
+          reason?: string
+          volunteer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "volunteer_rewards_help_session_id_fkey"
+            columns: ["help_session_id"]
+            isOneToOne: false
+            referencedRelation: "help_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "volunteer_rewards_volunteer_id_fkey"
+            columns: ["volunteer_id"]
+            isOneToOne: false
+            referencedRelation: "volunteers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       volunteers: {
         Row: {
           average_response_time_seconds: number | null
+          badges: string[] | null
           created_at: string
           email: string | null
           full_name: string
           id: string
           is_available: boolean | null
           last_location_update: string | null
+          level: string | null
           location_lat: number | null
           location_lng: number | null
           notification_radius_km: number | null
           phone: string
           rating: number | null
+          reward_points: number | null
           total_responses: number | null
           updated_at: string
           user_id: string
@@ -609,17 +735,20 @@ export type Database = {
         }
         Insert: {
           average_response_time_seconds?: number | null
+          badges?: string[] | null
           created_at?: string
           email?: string | null
           full_name: string
           id?: string
           is_available?: boolean | null
           last_location_update?: string | null
+          level?: string | null
           location_lat?: number | null
           location_lng?: number | null
           notification_radius_km?: number | null
           phone: string
           rating?: number | null
+          reward_points?: number | null
           total_responses?: number | null
           updated_at?: string
           user_id: string
@@ -627,17 +756,20 @@ export type Database = {
         }
         Update: {
           average_response_time_seconds?: number | null
+          badges?: string[] | null
           created_at?: string
           email?: string | null
           full_name?: string
           id?: string
           is_available?: boolean | null
           last_location_update?: string | null
+          level?: string | null
           location_lat?: number | null
           location_lng?: number | null
           notification_radius_km?: number | null
           phone?: string
           rating?: number | null
+          reward_points?: number | null
           total_responses?: number | null
           updated_at?: string
           user_id?: string

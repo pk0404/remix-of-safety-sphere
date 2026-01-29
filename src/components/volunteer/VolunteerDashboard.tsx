@@ -13,6 +13,7 @@ import {
   Star,
   TrendingUp,
   AlertTriangle,
+  Award,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,6 +21,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useVolunteers, VolunteerAlert, SupportRequest } from '@/hooks/useVolunteers';
+import { useHelpSession } from '@/hooks/useHelpSession';
 import useGeolocation from '@/hooks/useGeolocation';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -34,8 +36,11 @@ const VolunteerDashboard = () => {
     respondToAlert,
     refreshData,
   } = useVolunteers();
+  
+  const { createSession, activeSession } = useHelpSession();
 
   const [updatingLocation, setUpdatingLocation] = useState(false);
+  const [acceptingAlert, setAcceptingAlert] = useState<string | null>(null);
 
   // Update location periodically
   useEffect(() => {
@@ -105,7 +110,7 @@ const VolunteerDashboard = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div className="text-center p-3 bg-muted/50 rounded-lg">
               <p className="text-2xl font-bold text-primary">{volunteer.total_responses}</p>
               <p className="text-xs text-muted-foreground">Total Responses</p>
@@ -124,6 +129,13 @@ const VolunteerDashboard = () => {
             <div className="text-center p-3 bg-muted/50 rounded-lg">
               <p className="text-2xl font-bold text-info">{pendingAlerts.length}</p>
               <p className="text-xs text-muted-foreground">Pending Alerts</p>
+            </div>
+            <div className="text-center p-3 bg-muted/50 rounded-lg">
+              <p className="text-2xl font-bold text-primary flex items-center justify-center gap-1">
+                <Award className="w-5 h-5" />
+                {volunteer.reward_points || 0}
+              </p>
+              <p className="text-xs text-muted-foreground">Points</p>
             </div>
           </div>
 
@@ -202,10 +214,34 @@ const VolunteerDashboard = () => {
                       <Button
                         size="sm"
                         className="flex-1"
-                        onClick={() => respondToAlert(alert.id, 'accepted')}
+                        disabled={acceptingAlert === alert.id || !!activeSession}
+                        onClick={async () => {
+                          setAcceptingAlert(alert.id);
+                          // First respond to the alert
+                          await respondToAlert(alert.id, 'accepted');
+                          // Then create a help session with OTP
+                          if (volunteer && request) {
+                            await createSession(
+                              request.id,
+                              volunteer.id,
+                              request.requester_id,
+                              location?.latitude,
+                              location?.longitude,
+                              request.latitude,
+                              request.longitude
+                            );
+                          }
+                          setAcceptingAlert(null);
+                        }}
                       >
-                        <CheckCircle2 className="w-4 h-4 mr-1" />
-                        Accept & Help
+                        {acceptingAlert === alert.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <>
+                            <CheckCircle2 className="w-4 h-4 mr-1" />
+                            Accept & Help
+                          </>
+                        )}
                       </Button>
                       <Button
                         size="sm"

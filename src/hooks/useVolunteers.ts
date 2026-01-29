@@ -19,6 +19,9 @@ export interface Volunteer {
   rating: number;
   verified: boolean;
   created_at: string;
+  reward_points: number;
+  badges: string[];
+  level: string;
 }
 
 export interface SupportRequest {
