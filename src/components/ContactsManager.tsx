@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import gsap from 'gsap';
-import { UserPlus, Trash2, Phone, User, Heart } from 'lucide-react';
+import { UserPlus, Trash2, Phone, User, Heart, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import {
   Dialog,
   DialogContent,
@@ -18,6 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useEmergencyContacts } from '@/hooks/useEmergencyContacts';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface Contact {
   id: string;
@@ -27,20 +29,36 @@ export interface Contact {
 }
 
 interface ContactsManagerProps {
-  contacts: Contact[];
-  setContacts: (contacts: Contact[]) => void;
+  contacts?: Contact[];
+  setContacts?: (contacts: Contact[]) => void;
 }
 
-const ContactsManager = ({ contacts, setContacts }: ContactsManagerProps) => {
+const ContactsManager = ({ contacts: propContacts, setContacts }: ContactsManagerProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
+  const { 
+    contacts: dbContacts, 
+    loading, 
+    addContact: addDbContact, 
+    deleteContact: deleteDbContact 
+  } = useEmergencyContacts();
+  
   const [isOpen, setIsOpen] = useState(false);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [relationship, setRelationship] = useState('');
-  const { toast } = useToast();
+  const [submitting, setSubmitting] = useState(false);
+
+  // Use database contacts if user is logged in, otherwise use prop contacts
+  const contacts = user ? dbContacts.map(c => ({
+    id: c.id,
+    name: c.name,
+    phone: c.phone,
+    relationship: c.relationship || ''
+  })) : (propContacts || []);
 
   useEffect(() => {
-    if (containerRef.current) {
+    if (containerRef.current && contacts.length > 0) {
       gsap.fromTo(containerRef.current.children,
         { y: 20, opacity: 0 },
         { y: 0, opacity: 1, duration: 0.4, stagger: 0.1, ease: "power2.out" }
@@ -48,47 +66,66 @@ const ContactsManager = ({ contacts, setContacts }: ContactsManagerProps) => {
     }
   }, [contacts.length]);
 
-  const addContact = () => {
+  const handleAddContact = async () => {
     if (!name || !phone || !relationship) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all fields.",
-        variant: "destructive",
+      toast.error('Missing Information', {
+        description: 'Please fill in all fields.',
       });
       return;
     }
 
-    const newContact: Contact = {
-      id: Date.now().toString(),
-      name,
-      phone,
-      relationship,
-    };
+    setSubmitting(true);
 
-    const updatedContacts = [...contacts, newContact];
-    setContacts(updatedContacts);
-    localStorage.setItem('emergencyContacts', JSON.stringify(updatedContacts));
+    if (user) {
+      // Save to database
+      const result = await addDbContact({
+        name,
+        phone,
+        relationship,
+        is_primary: contacts.length === 0, // First contact is primary
+      });
+      
+      if (result) {
+        setName('');
+        setPhone('');
+        setRelationship('');
+        setIsOpen(false);
+      }
+    } else {
+      // Save to localStorage for non-authenticated users
+      const newContact: Contact = {
+        id: Date.now().toString(),
+        name,
+        phone,
+        relationship,
+      };
 
-    setName('');
-    setPhone('');
-    setRelationship('');
-    setIsOpen(false);
+      const updatedContacts = [...contacts, newContact];
+      setContacts?.(updatedContacts);
+      localStorage.setItem('emergencyContacts', JSON.stringify(updatedContacts));
 
-    toast({
-      title: "Contact Added",
-      description: `${name} has been added to your emergency contacts.`,
-    });
+      setName('');
+      setPhone('');
+      setRelationship('');
+      setIsOpen(false);
+
+      toast.success('Contact Added', {
+        description: `${name} has been added to your emergency contacts.`,
+      });
+    }
+
+    setSubmitting(false);
   };
 
-  const removeContact = (id: string) => {
-    const updatedContacts = contacts.filter(c => c.id !== id);
-    setContacts(updatedContacts);
-    localStorage.setItem('emergencyContacts', JSON.stringify(updatedContacts));
-
-    toast({
-      title: "Contact Removed",
-      description: "Emergency contact has been removed.",
-    });
+  const handleRemoveContact = async (id: string) => {
+    if (user) {
+      await deleteDbContact(id);
+    } else {
+      const updatedContacts = contacts.filter(c => c.id !== id);
+      setContacts?.(updatedContacts);
+      localStorage.setItem('emergencyContacts', JSON.stringify(updatedContacts));
+      toast.success('Contact Removed');
+    }
   };
 
   const getRelationshipIcon = (rel: string) => {
@@ -108,7 +145,7 @@ const ContactsManager = ({ contacts, setContacts }: ContactsManagerProps) => {
         <h2 className="text-lg font-semibold text-foreground">Emergency Contacts</h2>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" className="gradient-primary text-primary-foreground">
+            <Button size="sm" className="gradient-primary text-primary-foreground" disabled={!user}>
               <UserPlus className="w-4 h-4 mr-2" />
               Add
             </Button>
@@ -151,20 +188,41 @@ const ContactsManager = ({ contacts, setContacts }: ContactsManagerProps) => {
                   </SelectContent>
                 </Select>
               </div>
-              <Button onClick={addContact} className="w-full gradient-primary text-primary-foreground">
-                Add Contact
+              <Button 
+                onClick={handleAddContact} 
+                className="w-full gradient-primary text-primary-foreground"
+                disabled={submitting}
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Adding...
+                  </>
+                ) : (
+                  'Add Contact'
+                )}
               </Button>
             </div>
           </DialogContent>
         </Dialog>
+        {!user && (
+          <p className="text-xs text-muted-foreground">Sign in to save</p>
+        )}
       </div>
 
       <div ref={containerRef} className="space-y-2">
-        {contacts.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-6 text-muted-foreground">
+            <Loader2 className="w-8 h-8 mx-auto mb-2 animate-spin" />
+            <p className="text-sm">Loading contacts...</p>
+          </div>
+        ) : contacts.length === 0 ? (
           <div className="text-center py-6 text-muted-foreground">
             <User className="w-10 h-10 mx-auto mb-2 opacity-50" />
             <p className="text-sm">No emergency contacts added</p>
-            <p className="text-xs">Add contacts who will be notified</p>
+            <p className="text-xs">
+              {user ? 'Add contacts who will be notified' : 'Sign in to add contacts'}
+            </p>
           </div>
         ) : (
           contacts.map((contact) => (
@@ -189,7 +247,7 @@ const ContactsManager = ({ contacts, setContacts }: ContactsManagerProps) => {
                   <Phone className="w-4 h-4" />
                 </a>
                 <button
-                  onClick={() => removeContact(contact.id)}
+                  onClick={() => handleRemoveContact(contact.id)}
                   className="p-2 rounded-full bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />

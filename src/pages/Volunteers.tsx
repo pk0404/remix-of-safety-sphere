@@ -7,6 +7,7 @@ import {
   BarChart3,
   ChevronLeft,
   LogIn,
+  Award,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -15,13 +16,17 @@ import VolunteerRegistration from '@/components/volunteer/VolunteerRegistration'
 import VolunteerDashboard from '@/components/volunteer/VolunteerDashboard';
 import SupportRequestButton from '@/components/volunteer/SupportRequestButton';
 import AdminDashboard from '@/components/volunteer/AdminDashboard';
+import VolunteerRewards from '@/components/volunteer/VolunteerRewards';
+import HelpSessionTracker from '@/components/volunteer/HelpSessionTracker';
 import { useVolunteers } from '@/hooks/useVolunteers';
+import { useHelpSession } from '@/hooks/useHelpSession';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Volunteers = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { isVolunteer, loading: volunteerLoading } = useVolunteers();
+  const { activeSession } = useHelpSession();
   const [activeTab, setActiveTab] = useState('request');
 
   useEffect(() => {
@@ -53,6 +58,13 @@ const Volunteers = () => {
           <ChevronLeft className="w-4 h-4 mr-1" />
           Back to Home
         </Button>
+
+        {/* Active Help Session Tracker */}
+        {activeSession && (
+          <div className="mb-6">
+            <HelpSessionTracker isVolunteer={isVolunteer} />
+          </div>
+        )}
 
         {/* Hero Section */}
         <div className="text-center mb-8">
@@ -87,7 +99,7 @@ const Volunteers = () => {
           </div>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="request" className="gap-2">
                 <Heart className="w-4 h-4" />
                 <span className="hidden sm:inline">Request Help</span>
@@ -99,6 +111,10 @@ const Volunteers = () => {
               <TabsTrigger value="dashboard" className="gap-2" disabled={!isVolunteer}>
                 <Shield className="w-4 h-4" />
                 <span className="hidden sm:inline">My Dashboard</span>
+              </TabsTrigger>
+              <TabsTrigger value="rewards" className="gap-2" disabled={!isVolunteer}>
+                <Award className="w-4 h-4" />
+                <span className="hidden sm:inline">Rewards</span>
               </TabsTrigger>
               <TabsTrigger value="admin" className="gap-2">
                 <BarChart3 className="w-4 h-4" />
@@ -173,6 +189,25 @@ const Volunteers = () => {
                   </h2>
                   <p className="text-muted-foreground mb-4">
                     Become a volunteer to help people in your community
+                  </p>
+                  <Button onClick={() => setActiveTab('register')}>
+                    Register as Volunteer
+                  </Button>
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="rewards">
+              {isVolunteer ? (
+                <VolunteerRewards />
+              ) : (
+                <div className="text-center py-12">
+                  <Award className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+                  <h2 className="text-xl font-semibold text-foreground mb-2">
+                    Register to view rewards
+                  </h2>
+                  <p className="text-muted-foreground mb-4">
+                    Earn points and badges by helping others in your community
                   </p>
                   <Button onClick={() => setActiveTab('register')}>
                     Register as Volunteer
