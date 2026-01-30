@@ -289,6 +289,44 @@ export type Database = {
         }
         Relationships: []
       }
+      journey_locations: {
+        Row: {
+          accuracy: number | null
+          id: string
+          journey_id: string
+          latitude: number
+          longitude: number
+          recorded_at: string
+          user_id: string
+        }
+        Insert: {
+          accuracy?: number | null
+          id?: string
+          journey_id: string
+          latitude: number
+          longitude: number
+          recorded_at?: string
+          user_id: string
+        }
+        Update: {
+          accuracy?: number | null
+          id?: string
+          journey_id?: string
+          latitude?: number
+          longitude?: number
+          recorded_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "journey_locations_journey_id_fkey"
+            columns: ["journey_id"]
+            isOneToOne: false
+            referencedRelation: "journeys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       journeys: {
         Row: {
           completed_at: string | null
@@ -298,6 +336,8 @@ export type Database = {
           destination_name: string | null
           expected_arrival: string | null
           id: string
+          start_latitude: number | null
+          start_longitude: number | null
           status: string | null
           user_id: string
         }
@@ -309,6 +349,8 @@ export type Database = {
           destination_name?: string | null
           expected_arrival?: string | null
           id?: string
+          start_latitude?: number | null
+          start_longitude?: number | null
           status?: string | null
           user_id: string
         }
@@ -320,6 +362,8 @@ export type Database = {
           destination_name?: string | null
           expected_arrival?: string | null
           id?: string
+          start_latitude?: number | null
+          start_longitude?: number | null
           status?: string | null
           user_id?: string
         }
@@ -779,7 +823,16 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      volunteer_stats: {
+        Row: {
+          available_volunteers: number | null
+          average_rating: number | null
+          total_points_awarded: number | null
+          total_responses: number | null
+          total_volunteers: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
