@@ -145,7 +145,7 @@ const ContactsManager = ({ contacts: propContacts, setContacts }: ContactsManage
         <h2 className="text-lg font-semibold text-foreground">Emergency Contacts</h2>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" className="gradient-primary text-primary-foreground" disabled={!user}>
+            <Button size="sm" className="gradient-primary text-primary-foreground">
               <UserPlus className="w-4 h-4 mr-2" />
               Add
             </Button>
@@ -204,10 +204,7 @@ const ContactsManager = ({ contacts: propContacts, setContacts }: ContactsManage
               </Button>
             </div>
           </DialogContent>
-        </Dialog>
-        {!user && (
-          <p className="text-xs text-muted-foreground">Sign in to save</p>
-        )}
+      </Dialog>
       </div>
 
       <div ref={containerRef} className="space-y-2">
@@ -220,9 +217,7 @@ const ContactsManager = ({ contacts: propContacts, setContacts }: ContactsManage
           <div className="text-center py-6 text-muted-foreground">
             <User className="w-10 h-10 mx-auto mb-2 opacity-50" />
             <p className="text-sm">No emergency contacts added</p>
-            <p className="text-xs">
-              {user ? 'Add contacts who will be notified' : 'Sign in to add contacts'}
-            </p>
+            <p className="text-xs">Add contacts who will be notified in emergencies</p>
           </div>
         ) : (
           contacts.map((contact) => (

@@ -1,12 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
-import Header from '@/components/Header';
 import SOSButton from '@/components/SOSButton';
 import ContactsManager from '@/components/ContactsManager';
 import QuickActions from '@/components/QuickActions';
 import SafetyTips from '@/components/SafetyTips';
-import MediaRecorderComponent from '@/components/MediaRecorder';
 import AudioRecorderComponent from '@/components/AudioRecorder';
 import JourneyTracker from '@/components/JourneyTracker';
 import AISafetyAssistant from '@/components/AISafetyAssistant';
@@ -18,7 +16,7 @@ import GoogleMapsProvider from '@/components/GoogleMapsProvider';
 import OfflineIndicator from '@/components/OfflineIndicator';
 import EmergencyNumbers from '@/components/EmergencyNumbers';
 import LiveLocation from '@/components/LiveLocation';
-import SupportRequestButton from '@/components/volunteer/SupportRequestButton';
+import UserRequestHelpCard from '@/components/volunteer/UserRequestHelpCard';
 import useGeolocation from '@/hooks/useGeolocation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEmergencyContacts } from '@/hooks/useEmergencyContacts';
@@ -35,7 +33,7 @@ const Index = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { location, loading: locationLoading, refresh: refreshLocation } = useGeolocation();
-  const { contacts, loading: contactsLoading, addContact, deleteContact } = useEmergencyContacts();
+  const { contacts, loading: contactsLoading } = useEmergencyContacts();
   const { settings } = useUserSettings();
 
   // Convert database contacts to the format expected by components
@@ -98,8 +96,6 @@ const Index = () => {
   return (
     <GoogleMapsProvider>
       <div className="min-h-screen bg-background">
-        <Header />
-        
         <main ref={mainRef} className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-8">
           {/* Login prompt for unauthenticated users */}
           {!user && (
@@ -127,12 +123,12 @@ const Index = () => {
           )}
 
           {/* Desktop: Three column layout, Mobile: Single column */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
             
             {/* Left Column - Emergency Section */}
-            <div className="lg:col-span-4 space-y-6">
+            <div className="lg:col-span-4 space-y-4 lg:space-y-6">
               {/* SOS Section */}
-              <section className="bg-card rounded-2xl border border-border p-6 shadow-card">
+              <section className="bg-card rounded-2xl border border-border p-4 lg:p-6 shadow-card">
                 <div className="text-center mb-4">
                   <h2 className="text-xl font-bold text-foreground mb-1">Emergency SOS</h2>
                   <p className="text-muted-foreground text-xs">
@@ -159,9 +155,9 @@ const Index = () => {
                 />
               </section>
 
-              {/* Volunteer Support Request */}
+              {/* User Request Help Card */}
               <section>
-                <SupportRequestButton variant="compact" />
+                <UserRequestHelpCard />
               </section>
 
               {/* Volunteer Network Link */}
@@ -173,7 +169,7 @@ const Index = () => {
                     </div>
                     <div>
                       <p className="font-medium text-foreground">Volunteer Network</p>
-                      <p className="text-xs text-muted-foreground">Join or request support</p>
+                      <p className="text-xs text-muted-foreground">Join or view dashboard</p>
                     </div>
                   </div>
                   <Button size="sm" onClick={() => navigate('/volunteers')}>
@@ -199,7 +195,7 @@ const Index = () => {
             </div>
 
             {/* Middle Column - Map & Location */}
-            <div className="lg:col-span-5 space-y-6">
+            <div className="lg:col-span-5 space-y-4 lg:space-y-6">
               {/* Real-Time Safety Map - Full Featured */}
               <section>
                 <SafetyMapReal location={location} />
@@ -217,7 +213,7 @@ const Index = () => {
             </div>
 
             {/* Right Column - Info & Contacts */}
-            <div className="lg:col-span-3 space-y-6">
+            <div className="lg:col-span-3 space-y-4 lg:space-y-6">
               {/* AI Safety Assistant */}
               <section>
                 <AISafetyAssistant location={location} />
@@ -229,7 +225,7 @@ const Index = () => {
               </section>
 
               {/* Emergency Contacts */}
-              <section>
+              <section className="bg-card rounded-2xl border border-border p-4 shadow-card">
                 <ContactsManager 
                   contacts={formattedContacts} 
                   setContacts={() => {}}
@@ -245,7 +241,7 @@ const Index = () => {
 
           {/* Footer */}
           <footer className="text-center text-sm text-muted-foreground py-6 mt-8 border-t border-border">
-            <p className="font-semibold text-foreground mb-1">SafeGuard v2.0</p>
+            <p className="font-semibold text-foreground mb-1">SafeHer v2.0</p>
             <p className="text-xs">Your safety is our priority • Powered by AI</p>
           </footer>
         </main>
