@@ -5,16 +5,15 @@ import {
   Shield,
   Users,
   BarChart3,
-  ChevronLeft,
   LogIn,
   Award,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import Header from '@/components/Header';
 import VolunteerRegistration from '@/components/volunteer/VolunteerRegistration';
 import VolunteerDashboard from '@/components/volunteer/VolunteerDashboard';
-import SupportRequestButton from '@/components/volunteer/SupportRequestButton';
+import UserRequestHelpCard from '@/components/volunteer/UserRequestHelpCard';
+import VolunteerAlertsCard from '@/components/volunteer/VolunteerAlertsCard';
 import AdminDashboard from '@/components/volunteer/AdminDashboard';
 import VolunteerRewards from '@/components/volunteer/VolunteerRewards';
 import HelpSessionTracker from '@/components/volunteer/HelpSessionTracker';
@@ -25,7 +24,7 @@ import { useAuth } from '@/contexts/AuthContext';
 const Volunteers = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const { isVolunteer, loading: volunteerLoading } = useVolunteers();
+  const { isVolunteer, volunteer: volunteerProfile, loading: volunteerLoading } = useVolunteers();
   const { activeSession } = useHelpSession();
   const [activeTab, setActiveTab] = useState('request');
 
@@ -45,20 +44,7 @@ const Volunteers = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Back Button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/')}
-          className="mb-4"
-        >
-          <ChevronLeft className="w-4 h-4 mr-1" />
-          Back to Home
-        </Button>
-
         {/* Active Help Session Tracker */}
         {activeSession && (
           <div className="mb-6">
@@ -99,37 +85,56 @@ const Volunteers = () => {
           </div>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="request" className="gap-2">
+            <TabsList className="grid w-full grid-cols-5 h-auto">
+              <TabsTrigger value="request" className="gap-2 py-3">
                 <Heart className="w-4 h-4" />
-                <span className="hidden sm:inline">Request Help</span>
+                <span className="hidden sm:inline">Need Help</span>
               </TabsTrigger>
-              <TabsTrigger value="register" className="gap-2">
+              <TabsTrigger value="register" className="gap-2 py-3">
                 <Users className="w-4 h-4" />
-                <span className="hidden sm:inline">Become Volunteer</span>
+                <span className="hidden sm:inline">Be a Volunteer</span>
               </TabsTrigger>
-              <TabsTrigger value="dashboard" className="gap-2" disabled={!isVolunteer}>
+              <TabsTrigger value="dashboard" className="gap-2 py-3" disabled={!isVolunteer}>
                 <Shield className="w-4 h-4" />
-                <span className="hidden sm:inline">My Dashboard</span>
+                <span className="hidden sm:inline">Dashboard</span>
               </TabsTrigger>
-              <TabsTrigger value="rewards" className="gap-2" disabled={!isVolunteer}>
+              <TabsTrigger value="rewards" className="gap-2 py-3" disabled={!isVolunteer}>
                 <Award className="w-4 h-4" />
                 <span className="hidden sm:inline">Rewards</span>
               </TabsTrigger>
-              <TabsTrigger value="admin" className="gap-2">
+              <TabsTrigger value="admin" className="gap-2 py-3">
                 <BarChart3 className="w-4 h-4" />
                 <span className="hidden sm:inline">Analytics</span>
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="request" className="space-y-6">
-              <div className="max-w-2xl mx-auto">
-                <SupportRequestButton />
+              {/* Two Column Layout - User Request + Volunteer Response */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* User Request Help Card */}
+                <div>
+                  <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                    <Heart className="w-5 h-5 text-primary" />
+                    Request Support
+                  </h2>
+                  <UserRequestHelpCard />
+                </div>
+
+                {/* Volunteer Alerts Card (if they are a volunteer) */}
+                {isVolunteer && volunteerProfile && (
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                      <Shield className="w-5 h-5 text-success" />
+                      Respond to Requests
+                    </h2>
+                    <VolunteerAlertsCard volunteerId={volunteerProfile.id} />
+                  </div>
+                )}
               </div>
 
               {/* Info Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-                <div className="p-6 bg-card rounded-xl border border-border text-center">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 mt-8">
+                <div className="p-4 lg:p-6 bg-card rounded-xl border border-border text-center">
                   <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                     <Users className="w-6 h-6 text-primary" />
                   </div>
@@ -138,22 +143,22 @@ const Volunteers = () => {
                     Verified volunteers in your area are ready to help
                   </p>
                 </div>
-                <div className="p-6 bg-card rounded-xl border border-border text-center">
+                <div className="p-4 lg:p-6 bg-card rounded-xl border border-border text-center">
                   <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-4">
                     <Shield className="w-6 h-6 text-success" />
                   </div>
                   <h3 className="font-semibold text-foreground mb-2">Safe & Verified</h3>
                   <p className="text-sm text-muted-foreground">
-                    All volunteers go through verification process
+                    OTP verification ensures authentic help sessions
                   </p>
                 </div>
-                <div className="p-6 bg-card rounded-xl border border-border text-center">
+                <div className="p-4 lg:p-6 bg-card rounded-xl border border-border text-center">
                   <div className="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center mx-auto mb-4">
-                    <Heart className="w-6 h-6 text-warning" />
+                    <Award className="w-6 h-6 text-warning" />
                   </div>
-                  <h3 className="font-semibold text-foreground mb-2">Quick Response</h3>
+                  <h3 className="font-semibold text-foreground mb-2">Earn Rewards</h3>
                   <p className="text-sm text-muted-foreground">
-                    AI-powered alerts ensure fastest response time
+                    Volunteers earn points, badges, and recognition
                   </p>
                 </div>
               </div>

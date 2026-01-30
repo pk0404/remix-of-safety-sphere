@@ -54,26 +54,59 @@ export const useHelpSession = () => {
   const { user } = useAuth();
   const [activeSession, setActiveSession] = useState<HelpSession | null>(null);
   const [loading, setLoading] = useState(false);
+  const [volunteerProfile, setVolunteerProfile] = useState<{ id: string } | null>(null);
+
+  // First fetch volunteer profile if user exists
+  const fetchVolunteerProfile = useCallback(async () => {
+    if (!user) return null;
+    
+    try {
+      const { data, error } = await supabase
+        .from('volunteers')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      if (error) throw error;
+      setVolunteerProfile(data);
+      return data;
+    } catch (error) {
+      console.error('Error fetching volunteer profile:', error);
+      return null;
+    }
+  }, [user]);
 
   const fetchActiveSession = useCallback(async () => {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
+      // Get volunteer ID first
+      const volunteer = volunteerProfile || await fetchVolunteerProfile();
+      
+      // Build the query based on whether user is a volunteer
+      let query = supabase
         .from('help_sessions')
         .select('*')
-        .or(`requester_id.eq.${user.id},volunteer_id.in.(select id from volunteers where user_id = '${user.id}')`)
         .in('status', ['accepted', 'in_progress'])
         .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .limit(1);
+
+      // If user is a volunteer, check both requester and volunteer sessions
+      if (volunteer?.id) {
+        query = query.or(`requester_id.eq.${user.id},volunteer_id.eq.${volunteer.id}`);
+      } else {
+        // If not a volunteer, only check requester sessions
+        query = query.eq('requester_id', user.id);
+      }
+
+      const { data, error } = await query.maybeSingle();
 
       if (error) throw error;
       setActiveSession(data as HelpSession | null);
     } catch (error) {
       console.error('Error fetching help session:', error);
     }
-  }, [user]);
+  }, [user, volunteerProfile, fetchVolunteerProfile]);
 
   // Create a new help session when volunteer accepts
   const createSession = async (
@@ -283,8 +316,14 @@ export const useHelpSession = () => {
   }, [user, fetchActiveSession]);
 
   useEffect(() => {
-    fetchActiveSession();
-  }, [fetchActiveSession]);
+    fetchVolunteerProfile();
+  }, [fetchVolunteerProfile]);
+
+  useEffect(() => {
+    if (volunteerProfile !== undefined) {
+      fetchActiveSession();
+    }
+  }, [volunteerProfile, fetchActiveSession]);
 
   return {
     activeSession,
