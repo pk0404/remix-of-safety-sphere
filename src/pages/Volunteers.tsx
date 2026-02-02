@@ -7,6 +7,7 @@ import {
   BarChart3,
   LogIn,
   Award,
+  ArrowLeft,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -17,6 +18,7 @@ import VolunteerAlertsCard from '@/components/volunteer/VolunteerAlertsCard';
 import AdminDashboard from '@/components/volunteer/AdminDashboard';
 import VolunteerRewards from '@/components/volunteer/VolunteerRewards';
 import HelpSessionTracker from '@/components/volunteer/HelpSessionTracker';
+import BottomNavBar from '@/components/BottomNavBar';
 import { useVolunteers } from '@/hooks/useVolunteers';
 import { useHelpSession } from '@/hooks/useHelpSession';
 import { useAuth } from '@/contexts/AuthContext';
@@ -43,7 +45,7 @@ const Volunteers = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Active Help Session Tracker */}
         {activeSession && (
@@ -227,6 +229,8 @@ const Volunteers = () => {
           </Tabs>
         )}
       </main>
+
+      <BottomNavBar />
     </div>
   );
 };

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Bell, ArrowLeft, Check, Trash2, AlertTriangle, MapPin, Shield, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import BottomNavBar from '@/components/BottomNavBar';
 
 interface Notification {
   id: string;
@@ -85,7 +86,7 @@ const Notifications = () => {
   const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20">
       {/* Header */}
       <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-background/80 border-b border-border">
         <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
@@ -156,6 +157,8 @@ const Notifications = () => {
           </div>
         )}
       </main>
+
+      <BottomNavBar />
     </div>
   );
 };
