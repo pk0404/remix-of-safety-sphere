@@ -410,6 +410,7 @@ export type Database = {
           id: string
           medical_conditions: string[] | null
           phone: string | null
+          role: string | null
           updated_at: string
         }
         Insert: {
@@ -422,6 +423,7 @@ export type Database = {
           id: string
           medical_conditions?: string[] | null
           phone?: string | null
+          role?: string | null
           updated_at?: string
         }
         Update: {
@@ -434,6 +436,7 @@ export type Database = {
           id?: string
           medical_conditions?: string[] | null
           phone?: string | null
+          role?: string | null
           updated_at?: string
         }
         Relationships: []

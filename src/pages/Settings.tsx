@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
+import BottomNavBar from '@/components/BottomNavBar';
 
 const Settings = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -95,7 +96,7 @@ const Settings = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20">
       {/* Header */}
       <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-background/80 border-b border-border">
         <div className="max-w-2xl mx-auto px-4 h-14 flex items-center gap-3">
@@ -215,6 +216,8 @@ const Settings = () => {
           <p className="text-xs mt-1">Your Safety Companion</p>
         </div>
       </main>
+
+      <BottomNavBar />
     </div>
   );
 };
