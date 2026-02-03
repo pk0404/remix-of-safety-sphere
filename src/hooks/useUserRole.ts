@@ -24,11 +24,12 @@ export const useUserRole = (): UseUserRoleReturn => {
     }
 
     try {
+      // Query from the secure user_roles table
       const { data, error } = await supabase
-        .from('profiles')
+        .from('user_roles')
         .select('role')
-        .eq('id', user.id)
-        .single();
+        .eq('user_id', user.id)
+        .maybeSingle();
 
       if (error) throw error;
       setRoleState((data?.role as UserRole) || null);
@@ -48,10 +49,16 @@ export const useUserRole = (): UseUserRoleReturn => {
     if (!user) return false;
 
     try {
+      // Upsert into user_roles table
       const { error } = await supabase
-        .from('profiles')
-        .update({ role: newRole })
-        .eq('id', user.id);
+        .from('user_roles')
+        .upsert({ 
+          user_id: user.id, 
+          role: newRole,
+          updated_at: new Date().toISOString()
+        }, { 
+          onConflict: 'user_id' 
+        });
 
       if (error) throw error;
       setRoleState(newRole);

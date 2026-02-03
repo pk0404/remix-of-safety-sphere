@@ -10,21 +10,17 @@ import {
   Loader2,
   Star,
   TrendingUp,
-  AlertTriangle,
-  Award,
   Shield,
-  Phone,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { useVolunteers, VolunteerAlert } from '@/hooks/useVolunteers';
 import { useHelpSession } from '@/hooks/useHelpSession';
 import useGeolocation from '@/hooks/useGeolocation';
 import GoogleMapsProvider from '@/components/GoogleMapsProvider';
-import BottomNavBar from '@/components/BottomNavBar';
+import SlidingSidebar from '@/components/SlidingSidebar';
 import OfflineIndicator from '@/components/OfflineIndicator';
 import VolunteerRegistration from '@/components/volunteer/VolunteerRegistration';
 import VolunteerRewards from '@/components/volunteer/VolunteerRewards';
@@ -111,8 +107,9 @@ const HelperDashboard = () => {
   // Show registration if not a volunteer
   if (!isVolunteer) {
     return (
-      <div className="min-h-screen bg-background pb-20">
-        <div className="max-w-lg mx-auto px-4 py-8">
+      <div className="min-h-screen bg-background">
+        <SlidingSidebar />
+        <div className="max-w-lg mx-auto px-4 py-8 pt-16">
           <div className="text-center mb-8">
             <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-4">
               <Shield className="w-8 h-8 text-primary" />
@@ -124,7 +121,6 @@ const HelperDashboard = () => {
           </div>
           <VolunteerRegistration />
         </div>
-        <BottomNavBar />
       </div>
     );
   }
@@ -133,12 +129,20 @@ const HelperDashboard = () => {
 
   return (
     <GoogleMapsProvider>
-      <div className="min-h-screen bg-background pb-20">
-        <div className="max-w-4xl mx-auto px-4 py-4">
+      <div className="min-h-screen bg-background">
+        <SlidingSidebar />
+        
+        <div className="max-w-4xl mx-auto px-4 py-4 pt-16">
+          {/* Page Header */}
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-foreground">Helper Dashboard</h1>
+            <p className="text-muted-foreground text-sm">Respond to help requests in your area</p>
+          </div>
+
           {/* Active Session Tracker (Uber-like interface) */}
           {activeSession && (
             <div className="mb-4">
-              <HelpSessionTracker />
+              <HelpSessionTracker isVolunteer={true} />
             </div>
           )}
 
@@ -210,101 +214,103 @@ const HelperDashboard = () => {
           </Card>
 
           {/* Map View with Nearby Requests */}
-          <div className="mb-4">
+          <section id="map" className="mb-4">
             <HelperMapView 
               location={location}
               activeRequests={activeRequests}
               onNavigate={openDirections}
             />
-          </div>
+          </section>
 
           {/* Pending Alerts */}
-          {pendingAlerts.length > 0 && (
-            <Card className="mb-4 border-destructive/50 shadow-card">
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-destructive">
-                  <Bell className="w-5 h-5 animate-pulse" />
-                  Help Requests ({pendingAlerts.length})
-                </CardTitle>
-                <CardDescription>
-                  People nearby need assistance
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {pendingAlerts.map((alert) => {
-                    const request = alert.support_request;
-                    if (!request) return null;
+          <section id="requests">
+            {pendingAlerts.length > 0 && (
+              <Card className="mb-4 border-destructive/50 shadow-card">
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex items-center gap-2 text-destructive">
+                    <Bell className="w-5 h-5 animate-pulse" />
+                    Help Requests ({pendingAlerts.length})
+                  </CardTitle>
+                  <CardDescription>
+                    People nearby need assistance
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {pendingAlerts.map((alert) => {
+                      const request = alert.support_request;
+                      if (!request) return null;
 
-                    return (
-                      <div
-                        key={alert.id}
-                        className="p-4 bg-destructive/5 border border-destructive/20 rounded-xl"
-                      >
-                        <div className="flex items-start justify-between gap-3 mb-3">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2 flex-wrap">
-                              <Badge className={getUrgencyColor(request.urgency)}>
-                                {request.urgency.toUpperCase()}
-                              </Badge>
-                              <Badge variant="outline">{request.request_type}</Badge>
-                              {alert.distance_km && (
-                                <Badge variant="secondary">{alert.distance_km} km</Badge>
+                      return (
+                        <div
+                          key={alert.id}
+                          className="p-4 bg-destructive/5 border border-destructive/20 rounded-xl"
+                        >
+                          <div className="flex items-start justify-between gap-3 mb-3">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                <Badge className={getUrgencyColor(request.urgency)}>
+                                  {request.urgency.toUpperCase()}
+                                </Badge>
+                                <Badge variant="outline">{request.request_type}</Badge>
+                                {alert.distance_km && (
+                                  <Badge variant="secondary">{alert.distance_km} km</Badge>
+                                )}
+                              </div>
+                              {request.description && (
+                                <p className="text-sm mb-2">{request.description}</p>
                               )}
-                            </div>
-                            {request.description && (
-                              <p className="text-sm mb-2">{request.description}</p>
-                            )}
-                            {request.requester_name && (
-                              <p className="text-xs text-muted-foreground">
-                                From: {request.requester_name}
+                              {request.requester_name && (
+                                <p className="text-xs text-muted-foreground">
+                                  From: {request.requester_name}
+                                </p>
+                              )}
+                              <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                                <Clock className="w-3 h-3" />
+                                {formatDistanceToNow(new Date(request.created_at), { addSuffix: true })}
                               </p>
-                            )}
-                            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                              <Clock className="w-3 h-3" />
-                              {formatDistanceToNow(new Date(request.created_at), { addSuffix: true })}
-                            </p>
+                            </div>
+                          </div>
+
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              className="flex-1"
+                              disabled={acceptingAlert === alert.id || !!activeSession}
+                              onClick={() => handleAcceptRequest(alert)}
+                            >
+                              {acceptingAlert === alert.id ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <>
+                                  <CheckCircle2 className="w-4 h-4 mr-1" />
+                                  Accept
+                                </>
+                              )}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => openDirections(request.latitude, request.longitude)}
+                            >
+                              <Navigation className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => respondToAlert(alert.id, 'declined')}
+                            >
+                              <XCircle className="w-4 h-4" />
+                            </Button>
                           </div>
                         </div>
-
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            className="flex-1"
-                            disabled={acceptingAlert === alert.id || !!activeSession}
-                            onClick={() => handleAcceptRequest(alert)}
-                          >
-                            {acceptingAlert === alert.id ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <>
-                                <CheckCircle2 className="w-4 h-4 mr-1" />
-                                Accept
-                              </>
-                            )}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => openDirections(request.latitude, request.longitude)}
-                          >
-                            <Navigation className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => respondToAlert(alert.id, 'declined')}
-                          >
-                            <XCircle className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </section>
 
           {/* No Active Requests Message */}
           {pendingAlerts.length === 0 && !activeSession && (
@@ -320,10 +326,11 @@ const HelperDashboard = () => {
           )}
 
           {/* Rewards Section */}
-          <VolunteerRewards />
+          <section id="rewards">
+            <VolunteerRewards />
+          </section>
         </div>
 
-        <BottomNavBar />
         <OfflineIndicator />
       </div>
     </GoogleMapsProvider>

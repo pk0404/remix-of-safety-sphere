@@ -18,7 +18,7 @@ import VolunteerAlertsCard from '@/components/volunteer/VolunteerAlertsCard';
 import AdminDashboard from '@/components/volunteer/AdminDashboard';
 import VolunteerRewards from '@/components/volunteer/VolunteerRewards';
 import HelpSessionTracker from '@/components/volunteer/HelpSessionTracker';
-import BottomNavBar from '@/components/BottomNavBar';
+import SlidingSidebar from '@/components/SlidingSidebar';
 import { useVolunteers } from '@/hooks/useVolunteers';
 import { useHelpSession } from '@/hooks/useHelpSession';
 import { useAuth } from '@/contexts/AuthContext';
@@ -230,7 +230,7 @@ const Volunteers = () => {
         )}
       </main>
 
-      <BottomNavBar />
+      <SlidingSidebar />
     </div>
   );
 };
