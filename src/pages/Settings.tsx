@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import BottomNavBar from '@/components/BottomNavBar';
+import SlidingSidebar from '@/components/SlidingSidebar';
 
 const Settings = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -217,7 +217,7 @@ const Settings = () => {
         </div>
       </main>
 
-      <BottomNavBar />
+      <SlidingSidebar />
     </div>
   );
 };

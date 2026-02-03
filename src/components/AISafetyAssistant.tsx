@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
 interface Location {
@@ -35,6 +36,7 @@ interface SafetyAnalysis {
 const AISafetyAssistant = ({ location }: AISafetyAssistantProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
   
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -61,8 +63,21 @@ const AISafetyAssistant = ({ location }: AISafetyAssistantProps) => {
       return;
     }
 
+    if (!user) {
+      toast.error('Please sign in to use AI features');
+      return;
+    }
+
     setAnalyzingLocation(true);
     try {
+      // Get fresh session token
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        toast.error('Session expired. Please sign in again.');
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('safety-analysis', {
         body: {
           type: 'analyze_location',
@@ -106,14 +121,19 @@ const AISafetyAssistant = ({ location }: AISafetyAssistantProps) => {
       toast.success('Location analyzed');
     } catch (error) {
       console.error('Error analyzing location:', error);
-      toast.error('Failed to analyze location');
+      toast.error('Failed to analyze location. Please try again.');
     } finally {
       setAnalyzingLocation(false);
     }
-  }, [location]);
+  }, [location, user]);
 
   const sendMessage = async () => {
     if (!input.trim()) return;
+
+    if (!user) {
+      toast.error('Please sign in to chat with the AI assistant');
+      return;
+    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -127,6 +147,15 @@ const AISafetyAssistant = ({ location }: AISafetyAssistantProps) => {
     setLoading(true);
 
     try {
+      // Get fresh session token
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        toast.error('Session expired. Please sign in again.');
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('safety-analysis', {
         body: {
           type: 'safety_tips',
@@ -169,12 +198,32 @@ const AISafetyAssistant = ({ location }: AISafetyAssistantProps) => {
 
   const getRiskBadgeColor = (level: string) => {
     switch (level) {
-      case 'low': return 'bg-green-500/10 text-green-600 border-green-500/20';
-      case 'medium': return 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20';
-      case 'high': return 'bg-red-500/10 text-red-600 border-red-500/20';
+      case 'low': return 'bg-success/10 text-success border-success/20';
+      case 'medium': return 'bg-warning/10 text-warning border-warning/20';
+      case 'high': return 'bg-destructive/10 text-destructive border-destructive/20';
       default: return 'bg-muted text-muted-foreground';
     }
   };
+
+  // Show sign-in prompt if not authenticated
+  if (!user) {
+    return (
+      <div ref={containerRef} className="w-full">
+        <div className="flex items-center gap-2 mb-4">
+          <Bot className="w-5 h-5 text-primary" />
+          <h2 className="text-lg font-semibold text-foreground">AI Safety Assistant</h2>
+          <Badge variant="secondary" className="text-xs">
+            <Sparkles className="w-3 h-3 mr-1" />
+            AI Powered
+          </Badge>
+        </div>
+        <Card className="p-6 text-center">
+          <Bot className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
+          <p className="text-muted-foreground">Sign in to use the AI Safety Assistant</p>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div ref={containerRef} className="w-full">

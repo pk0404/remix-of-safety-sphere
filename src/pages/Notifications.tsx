@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Bell, ArrowLeft, Check, Trash2, AlertTriangle, MapPin, Shield, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import BottomNavBar from '@/components/BottomNavBar';
+import SlidingSidebar from '@/components/SlidingSidebar';
 
 interface Notification {
   id: string;
@@ -158,7 +158,7 @@ const Notifications = () => {
         )}
       </main>
 
-      <BottomNavBar />
+      <SlidingSidebar />
     </div>
   );
 };

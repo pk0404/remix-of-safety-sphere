@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import SOSButton from '@/components/SOSButton';
 import ContactsManager from '@/components/ContactsManager';
@@ -17,7 +16,7 @@ import OfflineIndicator from '@/components/OfflineIndicator';
 import EmergencyNumbers from '@/components/EmergencyNumbers';
 import LiveLocation from '@/components/LiveLocation';
 import UserRequestHelpCard from '@/components/volunteer/UserRequestHelpCard';
-import BottomNavBar from '@/components/BottomNavBar';
+import SlidingSidebar from '@/components/SlidingSidebar';
 import AudioEvidenceViewer from '@/components/AudioEvidenceViewer';
 import useGeolocation from '@/hooks/useGeolocation';
 import { useAuth } from '@/contexts/AuthContext';
@@ -30,7 +29,6 @@ import { toast } from 'sonner';
 const UserDashboard = () => {
   const mainRef = useRef<HTMLDivElement>(null);
   const sosTriggeredRef = useRef(false);
-  const navigate = useNavigate();
   const { user } = useAuth();
   const { location, loading: locationLoading, refresh: refreshLocation } = useGeolocation();
   const { contacts } = useEmergencyContacts();
@@ -82,8 +80,10 @@ const UserDashboard = () => {
 
   return (
     <GoogleMapsProvider>
-      <div className="min-h-screen bg-background pb-20">
-        <main ref={mainRef} className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div className="min-h-screen bg-background">
+        <SlidingSidebar />
+        
+        <main ref={mainRef} className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 pt-16">
           {/* Voice activation indicator */}
           {isListening && (
             <div className="mb-4 p-3 bg-success/10 border border-success/20 rounded-lg flex items-center gap-2">
@@ -92,13 +92,19 @@ const UserDashboard = () => {
             </div>
           )}
 
+          {/* Page Header */}
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-foreground">Safety Dashboard</h1>
+            <p className="text-muted-foreground text-sm">Your personal safety command center</p>
+          </div>
+
           {/* Two column layout for desktop */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
             
             {/* Left Column - Emergency & Actions */}
             <div className="space-y-4">
               {/* SOS Section */}
-              <section className="bg-card rounded-2xl border border-border p-4 shadow-card">
+              <section id="sos" className="bg-card rounded-2xl border border-border p-4 sm:p-6 shadow-card">
                 <div className="text-center mb-4">
                   <h2 className="text-xl font-bold text-foreground mb-1">Emergency SOS</h2>
                   <p className="text-muted-foreground text-xs">
@@ -111,44 +117,56 @@ const UserDashboard = () => {
               </section>
 
               {/* Request Help Card */}
-              <UserRequestHelpCard />
+              <section id="help">
+                <UserRequestHelpCard />
+              </section>
 
               {/* Quick Actions */}
               <QuickActions location={location} />
 
               {/* Live Location */}
-              <LiveLocation 
-                location={location} 
-                loading={locationLoading}
-                onRefresh={refreshLocation}
-                contacts={formattedContacts}
-              />
+              <section id="location">
+                <LiveLocation 
+                  location={location} 
+                  loading={locationLoading}
+                  onRefresh={refreshLocation}
+                  contacts={formattedContacts}
+                />
+              </section>
 
               {/* Audio Recorder with Evidence Viewer */}
-              <div className="space-y-4">
+              <section id="record" className="space-y-4">
                 <AudioRecorderComponent location={location} contacts={formattedContacts} />
                 <AudioEvidenceViewer />
-              </div>
+              </section>
 
               {/* Journey Tracker */}
-              <JourneyTracker location={location} contacts={formattedContacts} />
+              <section id="journey">
+                <JourneyTracker location={location} contacts={formattedContacts} />
+              </section>
 
               {/* Check-In System */}
-              <CheckInSystem location={location} />
+              <section id="checkin">
+                <CheckInSystem location={location} />
+              </section>
             </div>
 
             {/* Right Column - Map & Info */}
             <div className="space-y-4">
               {/* Safety Map with AI Integration */}
-              <SafetyMapReal location={location} />
+              <section id="map">
+                <SafetyMapReal location={location} />
+              </section>
 
               {/* AI Safety Assistant */}
-              <div className="bg-card rounded-2xl border border-border p-4 shadow-card">
+              <section id="ai" className="bg-card rounded-2xl border border-border p-4 shadow-card">
                 <AISafetyAssistant location={location} />
-              </div>
+              </section>
 
               {/* Analytics Dashboard */}
-              <SafetyAnalyticsDashboard />
+              <section id="analytics">
+                <SafetyAnalyticsDashboard />
+              </section>
 
               {/* Nearby Places */}
               <NearbyPlacesMap location={location} />
@@ -157,12 +175,12 @@ const UserDashboard = () => {
               <EmergencyNumbers />
 
               {/* Emergency Contacts */}
-              <div className="bg-card rounded-2xl border border-border p-4 shadow-card">
+              <section id="contacts" className="bg-card rounded-2xl border border-border p-4 shadow-card">
                 <ContactsManager 
                   contacts={formattedContacts} 
                   setContacts={() => {}}
                 />
-              </div>
+              </section>
 
               {/* Safety Tips */}
               <SafetyTips />
@@ -170,7 +188,6 @@ const UserDashboard = () => {
           </div>
         </main>
 
-        <BottomNavBar />
         <OfflineIndicator />
       </div>
     </GoogleMapsProvider>
