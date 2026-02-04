@@ -16,6 +16,7 @@ import OfflineIndicator from '@/components/OfflineIndicator';
 import EmergencyNumbers from '@/components/EmergencyNumbers';
 import LiveLocation from '@/components/LiveLocation';
 import UserRequestHelpCard from '@/components/volunteer/UserRequestHelpCard';
+import UserHelperTracker from '@/components/volunteer/UserHelperTracker';
 import SlidingSidebar from '@/components/SlidingSidebar';
 import AudioEvidenceViewer from '@/components/AudioEvidenceViewer';
 import useGeolocation from '@/hooks/useGeolocation';
@@ -24,6 +25,7 @@ import { useEmergencyContacts } from '@/hooks/useEmergencyContacts';
 import { useUserSettings } from '@/hooks/useUserSettings';
 import { useShakeDetection } from '@/hooks/useShakeDetection';
 import { useVoiceActivation } from '@/hooks/useVoiceActivation';
+import { useHelpSession } from '@/hooks/useHelpSession';
 import { toast } from 'sonner';
 
 const UserDashboard = () => {
@@ -33,6 +35,7 @@ const UserDashboard = () => {
   const { location, loading: locationLoading, refresh: refreshLocation } = useGeolocation();
   const { contacts } = useEmergencyContacts();
   const { settings } = useUserSettings();
+  const { activeSession } = useHelpSession();
 
   const formattedContacts = contacts.map(c => ({
     id: c.id,
@@ -77,6 +80,19 @@ const UserDashboard = () => {
       );
     }
   }, []);
+
+  // If there's an active help session, show the full-screen tracker (like Grab)
+  if (activeSession) {
+    return (
+      <GoogleMapsProvider>
+        <div className="min-h-screen bg-background">
+          <SlidingSidebar />
+          <UserHelperTracker />
+          <OfflineIndicator />
+        </div>
+      </GoogleMapsProvider>
+    );
+  }
 
   return (
     <GoogleMapsProvider>

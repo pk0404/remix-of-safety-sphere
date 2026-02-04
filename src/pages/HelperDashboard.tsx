@@ -24,8 +24,8 @@ import SlidingSidebar from '@/components/SlidingSidebar';
 import OfflineIndicator from '@/components/OfflineIndicator';
 import VolunteerRegistration from '@/components/volunteer/VolunteerRegistration';
 import VolunteerRewards from '@/components/volunteer/VolunteerRewards';
-import HelpSessionTracker from '@/components/volunteer/HelpSessionTracker';
 import HelperMapView from '@/components/volunteer/HelperMapView';
+import HelperNavigationView from '@/components/volunteer/HelperNavigationView';
 import { formatDistanceToNow } from 'date-fns';
 
 const HelperDashboard = () => {
@@ -125,6 +125,16 @@ const HelperDashboard = () => {
     );
   }
 
+  // Show full-screen navigation view when there's an active session (like Waze/Google Maps)
+  if (activeSession) {
+    return (
+      <GoogleMapsProvider>
+        <HelperNavigationView />
+        <OfflineIndicator />
+      </GoogleMapsProvider>
+    );
+  }
+
   const pendingAlerts = alerts.filter(a => a.status === 'sent');
 
   return (
@@ -138,13 +148,6 @@ const HelperDashboard = () => {
             <h1 className="text-2xl font-bold text-foreground">Helper Dashboard</h1>
             <p className="text-muted-foreground text-sm">Respond to help requests in your area</p>
           </div>
-
-          {/* Active Session Tracker (Uber-like interface) */}
-          {activeSession && (
-            <div className="mb-4">
-              <HelpSessionTracker isVolunteer={true} />
-            </div>
-          )}
 
           {/* Status Header */}
           <Card className="mb-4 border-border shadow-card">
@@ -167,24 +170,24 @@ const HelperDashboard = () => {
                 />
               </div>
 
-              {/* Quick Stats */}
-              <div className="grid grid-cols-4 gap-2">
-                <div className="text-center p-2 bg-muted/50 rounded-lg">
+              {/* Quick Stats - Aligned Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="text-center p-3 bg-muted/50 rounded-lg">
                   <p className="text-lg font-bold">{volunteer?.total_responses}</p>
                   <p className="text-xs text-muted-foreground">Helped</p>
                 </div>
-                <div className="text-center p-2 bg-muted/50 rounded-lg">
+                <div className="text-center p-3 bg-muted/50 rounded-lg">
                   <p className="text-lg font-bold flex items-center justify-center gap-1">
                     <Star className="w-4 h-4 text-warning" />
                     {volunteer?.rating}
                   </p>
                   <p className="text-xs text-muted-foreground">Rating</p>
                 </div>
-                <div className="text-center p-2 bg-muted/50 rounded-lg">
+                <div className="text-center p-3 bg-muted/50 rounded-lg">
                   <p className="text-lg font-bold">{volunteer?.reward_points || 0}</p>
                   <p className="text-xs text-muted-foreground">Points</p>
                 </div>
-                <div className="text-center p-2 bg-muted/50 rounded-lg">
+                <div className="text-center p-3 bg-muted/50 rounded-lg">
                   <p className="text-lg font-bold">{pendingAlerts.length}</p>
                   <p className="text-xs text-muted-foreground">Alerts</p>
                 </div>
@@ -276,7 +279,7 @@ const HelperDashboard = () => {
                             <Button
                               size="sm"
                               className="flex-1"
-                              disabled={acceptingAlert === alert.id || !!activeSession}
+                              disabled={acceptingAlert === alert.id}
                               onClick={() => handleAcceptRequest(alert)}
                             >
                               {acceptingAlert === alert.id ? (
@@ -313,7 +316,7 @@ const HelperDashboard = () => {
           </section>
 
           {/* No Active Requests Message */}
-          {pendingAlerts.length === 0 && !activeSession && (
+          {pendingAlerts.length === 0 && (
             <Card className="mb-4">
               <CardContent className="py-8 text-center">
                 <CheckCircle2 className="w-12 h-12 mx-auto mb-4 text-success opacity-50" />
