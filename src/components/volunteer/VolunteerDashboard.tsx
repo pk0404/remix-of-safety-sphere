@@ -58,19 +58,19 @@ const VolunteerDashboard = () => {
 
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
-      case 'critical': return 'bg-red-500 text-white';
+      case 'critical': return 'bg-destructive text-destructive-foreground';
       case 'high': return 'bg-orange-500 text-white';
-      case 'normal': return 'bg-yellow-500 text-black';
-      default: return 'bg-green-500 text-white';
+      case 'normal': return 'bg-warning text-warning-foreground';
+      default: return 'bg-success text-success-foreground';
     }
   };
 
   const getAlertStatusColor = (status: string) => {
     switch (status) {
-      case 'accepted': return 'bg-green-500';
-      case 'declined': return 'bg-red-500';
-      case 'viewed': return 'bg-blue-500';
-      default: return 'bg-gray-500';
+      case 'accepted': return 'bg-success';
+      case 'declined': return 'bg-destructive';
+      case 'viewed': return 'bg-primary';
+      default: return 'bg-muted-foreground';
     }
   };
 

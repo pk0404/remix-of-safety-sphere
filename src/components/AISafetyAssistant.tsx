@@ -70,11 +70,20 @@ const AISafetyAssistant = ({ location }: AISafetyAssistantProps) => {
 
     setAnalyzingLocation(true);
     try {
-      // Get fresh session token
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      // Force refresh the session to get a valid token
+      const { data: { session }, error: sessionError } = await supabase.auth.refreshSession();
       
-      if (sessionError || !session) {
-        toast.error('Session expired. Please sign in again.');
+      if (sessionError) {
+        // Try getSession as fallback
+        const { data: fallbackData, error: fallbackError } = await supabase.auth.getSession();
+        if (fallbackError || !fallbackData.session) {
+          toast.error('Session expired. Please sign in again.');
+          return;
+        }
+      }
+      
+      if (!session) {
+        toast.error('Please sign in to use AI features');
         return;
       }
 
@@ -147,11 +156,21 @@ const AISafetyAssistant = ({ location }: AISafetyAssistantProps) => {
     setLoading(true);
 
     try {
-      // Get fresh session token
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      // Force refresh the session to ensure valid token
+      const { data: { session }, error: sessionError } = await supabase.auth.refreshSession();
       
-      if (sessionError || !session) {
-        toast.error('Session expired. Please sign in again.');
+      if (sessionError) {
+        // Try getSession as fallback
+        const { data: fallbackData, error: fallbackError } = await supabase.auth.getSession();
+        if (fallbackError || !fallbackData.session) {
+          toast.error('Session expired. Please sign in again.');
+          setLoading(false);
+          return;
+        }
+      }
+      
+      if (!session) {
+        toast.error('Please sign in to use AI features');
         setLoading(false);
         return;
       }

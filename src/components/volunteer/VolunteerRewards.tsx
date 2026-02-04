@@ -25,11 +25,11 @@ interface RewardHistory {
 }
 
 const LEVELS = [
-  { name: 'bronze', minPoints: 0, maxPoints: 200, icon: Medal, color: 'text-amber-600' },
-  { name: 'silver', minPoints: 200, maxPoints: 500, icon: Star, color: 'text-gray-400' },
-  { name: 'gold', minPoints: 500, maxPoints: 1000, icon: Trophy, color: 'text-yellow-500' },
-  { name: 'platinum', minPoints: 1000, maxPoints: 2000, icon: Crown, color: 'text-purple-500' },
-  { name: 'diamond', minPoints: 2000, maxPoints: Infinity, icon: Sparkles, color: 'text-blue-400' },
+  { name: 'bronze', minPoints: 0, maxPoints: 200, icon: Medal, color: 'text-orange-600' },
+  { name: 'silver', minPoints: 200, maxPoints: 500, icon: Star, color: 'text-muted-foreground' },
+  { name: 'gold', minPoints: 500, maxPoints: 1000, icon: Trophy, color: 'text-warning' },
+  { name: 'platinum', minPoints: 1000, maxPoints: 2000, icon: Crown, color: 'text-primary' },
+  { name: 'diamond', minPoints: 2000, maxPoints: Infinity, icon: Sparkles, color: 'text-info' },
 ];
 
 const BADGES = [
@@ -186,7 +186,7 @@ const VolunteerRewards = () => {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Star className="w-5 h-5 text-yellow-500" />
+            <Star className="w-5 h-5 text-warning" />
             Recent Rewards
           </CardTitle>
         </CardHeader>

@@ -88,9 +88,9 @@ const HelpSessionTracker = ({ isVolunteer = false }: HelpSessionTrackerProps) =>
       case 'accepted':
         return <Badge variant="secondary">Volunteer on the way</Badge>;
       case 'in_progress':
-        return <Badge className="bg-green-500">Help in progress</Badge>;
+        return <Badge className="bg-success text-success-foreground">Help in progress</Badge>;
       case 'completed':
-        return <Badge className="bg-blue-500">Completed</Badge>;
+        return <Badge className="bg-primary text-primary-foreground">Completed</Badge>;
       default:
         return <Badge variant="outline">{activeSession.status}</Badge>;
     }
@@ -126,31 +126,31 @@ const HelpSessionTracker = ({ isVolunteer = false }: HelpSessionTrackerProps) =>
           {/* Status Timeline */}
           <div className="flex items-center gap-2">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              activeSession.status === 'accepted' ? 'bg-yellow-500 text-white' : 'bg-green-500 text-white'
+              activeSession.status === 'accepted' ? 'bg-warning text-warning-foreground' : 'bg-success text-success-foreground'
             }`}>
               <CheckCircle2 className="w-4 h-4" />
             </div>
             <div className="flex-1 h-1 bg-muted rounded">
               <div
                 className={`h-full rounded transition-all ${
-                  activeSession.otp_verified ? 'bg-green-500 w-full' : 'bg-yellow-500 w-1/2'
+                  activeSession.otp_verified ? 'bg-success w-full' : 'bg-warning w-1/2'
                 }`}
               />
             </div>
             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              activeSession.otp_verified ? 'bg-green-500 text-white' : 'bg-muted text-muted-foreground'
+              activeSession.otp_verified ? 'bg-success text-success-foreground' : 'bg-muted text-muted-foreground'
             }`}>
               {activeSession.otp_verified ? <CheckCircle2 className="w-4 h-4" /> : '2'}
             </div>
             <div className="flex-1 h-1 bg-muted rounded">
               <div
                 className={`h-full rounded transition-all ${
-                  activeSession.status === 'completed' ? 'bg-green-500 w-full' : 'w-0'
+                  activeSession.status === 'completed' ? 'bg-success w-full' : 'w-0'
                 }`}
               />
             </div>
             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              activeSession.status === 'completed' ? 'bg-green-500 text-white' : 'bg-muted text-muted-foreground'
+              activeSession.status === 'completed' ? 'bg-success text-success-foreground' : 'bg-muted text-muted-foreground'
             }`}>
               <Award className="w-4 h-4" />
             </div>
@@ -172,8 +172,8 @@ const HelpSessionTracker = ({ isVolunteer = false }: HelpSessionTrackerProps) =>
 
           {/* OTP Section for Requester */}
           {!isVolunteer && !activeSession.otp_verified && (
-            <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
-              <p className="font-medium text-yellow-700 mb-2">Your OTP Code</p>
+            <div className="bg-warning/10 border border-warning/30 rounded-lg p-4">
+              <p className="font-medium text-warning mb-2">Your OTP Code</p>
               <div className="text-3xl font-mono font-bold tracking-widest text-center py-2">
                 {activeSession.otp_code}
               </div>

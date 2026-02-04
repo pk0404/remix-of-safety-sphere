@@ -42,7 +42,7 @@ interface Analytics {
   requestsByDay: { day: string; requests: number }[];
 }
 
-const COLORS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6'];
+const COLORS = ['hsl(0, 84%, 60%)', 'hsl(25, 95%, 53%)', 'hsl(48, 96%, 53%)', 'hsl(142, 71%, 45%)', 'hsl(217, 91%, 60%)', 'hsl(263, 70%, 50%)'];
 
 const AdminDashboard = () => {
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
@@ -165,11 +165,11 @@ const AdminDashboard = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-500';
-      case 'active': return 'bg-blue-500';
-      case 'resolved': return 'bg-green-500';
-      case 'cancelled': return 'bg-gray-500';
-      default: return 'bg-gray-500';
+      case 'pending': return 'bg-warning';
+      case 'active': return 'bg-primary';
+      case 'resolved': return 'bg-success';
+      case 'cancelled': return 'bg-muted-foreground';
+      default: return 'bg-muted-foreground';
     }
   };
 
@@ -391,7 +391,7 @@ const AdminDashboard = () => {
                     >
                       <div
                         className={`w-2 h-2 rounded-full ${
-                          volunteer.is_available ? 'bg-green-500' : 'bg-gray-500'
+                          volunteer.is_available ? 'bg-success' : 'bg-muted-foreground'
                         }`}
                       />
                       <div className="flex-1 min-w-0">
