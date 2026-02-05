@@ -109,6 +109,7 @@ export const useHelpSession = () => {
   }, [user, volunteerProfile, fetchVolunteerProfile]);
 
   // Create a new help session when volunteer accepts
+  // Note: OTP is generated here and stored - user will see it, helper must verify it
   const createSession = async (
     supportRequestId: string,
     volunteerId: string,
@@ -120,6 +121,7 @@ export const useHelpSession = () => {
   ) => {
     setLoading(true);
     try {
+      // Generate OTP for the user to show the helper
       const otp = generateOTP();
       
       const { data, error } = await supabase
@@ -141,8 +143,10 @@ export const useHelpSession = () => {
       if (error) throw error;
 
       setActiveSession(data as HelpSession);
+      
+      // Toast for helper - they don't see OTP, they need to ask user
       toast.success('Help session started!', {
-        description: `OTP for verification: ${otp}`,
+        description: 'Navigate to the user and ask them for their OTP to verify arrival.',
         duration: 10000,
       });
 

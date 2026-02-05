@@ -61,10 +61,13 @@ interface UseCheckInReturn {
 // Escalation levels for missed check-ins
 const ESCALATION_LEVELS = {
   REMINDER: 1,    // First missed - gentle reminder
-  WARNING: 2,     // Second missed - urgent warning
-  ALERT: 3,       // Third missed - alert contacts
+  WARNING: 2,     // Second missed - urgent warning (grace period)
+  ALERT: 3,       // Third missed - alert contacts via email
   EMERGENCY: 4,   // Fourth missed - trigger emergency call
 } as const;
+
+// Grace period in minutes after missed check-in
+const GRACE_PERIOD_MINUTES = 2;
 
 export const useCheckIn = (location?: Location | null): UseCheckInReturn => {
   const { user } = useAuth();
@@ -130,6 +133,38 @@ export const useCheckIn = (location?: Location | null): UseCheckInReturn => {
   }, [fetchCheckInHistory]);
 
   /**
+   * Send emergency email to contacts via edge function
+   */
+  const sendEmergencyEmail = useCallback(async () => {
+    if (!user || !location) return;
+
+    try {
+      console.log('[CheckIn] Sending emergency email...');
+      
+      const { data, error } = await supabase.functions.invoke('send-emergency-email', {
+        body: {
+          user_id: user.id,
+          latitude: location.latitude,
+          longitude: location.longitude,
+          missed_count: missedCount,
+          last_check_in: lastCheckIn?.checked_in_at,
+        },
+      });
+
+      if (error) throw error;
+      
+      console.log('[CheckIn] Emergency email sent:', data);
+      toast.error('🚨 Emergency contacts notified via email', {
+        description: 'Your emergency contacts have been alerted with your location',
+        duration: 10000,
+      });
+    } catch (error) {
+      console.error('[CheckIn] Error sending emergency email:', error);
+      toast.error('Failed to send emergency email');
+    }
+  }, [user, location, missedCount, lastCheckIn]);
+
+  /**
    * Escalate missed check-in based on miss count
    */
   const handleMissedCheckIn = useCallback(async () => {
@@ -159,24 +194,25 @@ export const useCheckIn = (location?: Location | null): UseCheckInReturn => {
     switch (newMissedCount) {
       case ESCALATION_LEVELS.REMINDER:
         toast.warning('⏰ Check-in reminder!', {
-          description: 'Please confirm you are safe',
+          description: `Please confirm you are safe. You have ${GRACE_PERIOD_MINUTES} minutes to check in.`,
           duration: 30000,
         });
         break;
 
       case ESCALATION_LEVELS.WARNING:
         toast.error('⚠️ Urgent: Check-in overdue!', {
-          description: 'Please check in immediately',
+          description: 'Grace period ending soon. Please check in immediately.',
           duration: 60000,
         });
         break;
 
       case ESCALATION_LEVELS.ALERT:
-        toast.error('🚨 Alert: Multiple missed check-ins!', {
-          description: 'Preparing to notify emergency contacts',
+        toast.error('🚨 Alert: Notifying emergency contacts!', {
+          description: 'Sending email with your location to emergency contacts',
           duration: 60000,
         });
-        // Could send SMS/notification to contacts here
+        // Send emergency email to contacts
+        await sendEmergencyEmail();
         break;
 
       case ESCALATION_LEVELS.EMERGENCY:
@@ -187,7 +223,7 @@ export const useCheckIn = (location?: Location | null): UseCheckInReturn => {
         triggerEmergencyCall();
         break;
     }
-  }, [missedCount, user, location, contacts]);
+  }, [missedCount, user, location, sendEmergencyEmail]);
 
   /**
    * Trigger emergency call to primary contact

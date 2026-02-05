@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Home,
@@ -11,7 +11,6 @@ import {
   FileText,
   HelpCircle,
   Menu,
-  X,
   LogIn,
   LogOut,
   User,
@@ -23,11 +22,11 @@ import {
   Award,
   BarChart3,
   Heart,
+  FileAudio,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
 import { cn } from '@/lib/utils';
@@ -43,6 +42,7 @@ interface NavItem {
 
 const userNavItems: NavItem[] = [
   { label: 'Dashboard', icon: Home, href: '/', section: 'main' },
+  { label: 'Audio Library', icon: FileAudio, href: '/audio-library', section: 'main' },
   { label: 'Safety Map', icon: Map, href: '/#map', section: 'safety' },
   { label: 'Live Location', icon: MapPin, href: '/#location', section: 'safety' },
   { label: 'Audio Recorder', icon: Mic, href: '/#record', section: 'safety' },
@@ -72,6 +72,7 @@ const helperNavItems: NavItem[] = [
 
 const SlidingSidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [activeHref, setActiveHref] = useState<string | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
@@ -80,13 +81,18 @@ const SlidingSidebar = () => {
   const navItems = role === 'helper' ? helperNavItems : userNavItems;
 
   const isActive = (href: string) => {
-    if (href === '/') return location.pathname === '/';
-    if (href.startsWith('/#')) return location.pathname === '/';
-    return location.pathname.startsWith(href.split('#')[0]);
+    // Check if this item was clicked
+    if (activeHref === href) return true;
+    // Only highlight exact page matches (not hash links)
+    if (href === '/') return location.pathname === '/' && !activeHref;
+    if (href.startsWith('/#')) return false; // Hash links only active when clicked
+    return location.pathname === href;
   };
 
   const handleNavClick = (href: string) => {
+    setActiveHref(href);
     setIsOpen(false);
+    
     if (href.startsWith('/#')) {
       const section = href.substring(2);
       // Navigate to home first if not there
@@ -98,6 +104,9 @@ const SlidingSidebar = () => {
       } else {
         document.getElementById(section)?.scrollIntoView({ behavior: 'smooth' });
       }
+    } else {
+      // Clear active href for page navigation (router will handle it)
+      setActiveHref(null);
     }
   };
 
@@ -114,7 +123,7 @@ const SlidingSidebar = () => {
           className={cn(
             'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-sm w-full text-left',
             active
-              ? 'bg-primary text-primary-foreground font-medium'
+              ? 'bg-destructive text-destructive-foreground font-medium'
               : 'text-muted-foreground hover:bg-muted hover:text-foreground'
           )}
         >
@@ -133,10 +142,11 @@ const SlidingSidebar = () => {
       <SheetClose asChild>
         <Link
           to={item.href}
+          onClick={() => handleNavClick(item.href)}
           className={cn(
             'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-sm',
             active
-              ? 'bg-primary text-primary-foreground font-medium'
+              ? 'bg-destructive text-destructive-foreground font-medium'
               : 'text-muted-foreground hover:bg-muted hover:text-foreground'
           )}
         >

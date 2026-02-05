@@ -154,64 +154,80 @@ const CheckInSystem = ({ location }: CheckInSystemProps) => {
                   <History className="w-4 h-4" />
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-md">
+              <DialogContent className="max-w-lg max-h-[80vh]">
                 <DialogHeader>
                   <DialogTitle>Check-In History</DialogTitle>
                   <DialogDescription>
                     Your recent safety check-ins
                   </DialogDescription>
                 </DialogHeader>
-                <ScrollArea className="h-[300px] pr-4">
+                <ScrollArea className="h-[400px] pr-4">
                   {checkInHistory.length === 0 ? (
                     <p className="text-center text-muted-foreground py-8">
                       No check-ins yet
                     </p>
                   ) : (
                     <div className="space-y-3">
-                      {checkInHistory.map((checkIn) => (
-                        <div
-                          key={checkIn.id}
-                          className={cn(
-                            'flex items-center justify-between p-3 rounded-lg border',
-                            checkIn.status === 'active' && 'bg-success/5 border-success/20',
-                            checkIn.status === 'missed' && 'bg-warning/5 border-warning/20',
-                            checkIn.status === 'alerted' && 'bg-destructive/5 border-destructive/20'
-                          )}
-                        >
-                          <div className="flex items-center gap-3">
-                            {checkIn.status === 'active' && (
-                              <CheckCircle2 className="w-5 h-5 text-success" />
+                      {checkInHistory.map((checkIn) => {
+                        const date = new Date(checkIn.checked_in_at);
+                        return (
+                          <div
+                            key={checkIn.id}
+                            className={cn(
+                              'p-4 rounded-lg border',
+                              checkIn.status === 'active' && 'bg-success/5 border-success/20',
+                              checkIn.status === 'missed' && 'bg-warning/5 border-warning/20',
+                              checkIn.status === 'alerted' && 'bg-destructive/5 border-destructive/20'
                             )}
-                            {checkIn.status === 'missed' && (
-                              <AlertTriangle className="w-5 h-5 text-warning" />
-                            )}
-                            {checkIn.status === 'alerted' && (
-                              <Phone className="w-5 h-5 text-destructive" />
-                            )}
-                            <div>
-                              <p className="text-sm font-medium">
-                                {formatDate(checkIn.checked_in_at)}
-                              </p>
-                              {checkIn.notes && (
-                                <p className="text-xs text-muted-foreground">
-                                  {checkIn.notes}
-                                </p>
-                              )}
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex items-start gap-3">
+                                {checkIn.status === 'active' && (
+                                  <CheckCircle2 className="w-5 h-5 text-success mt-0.5" />
+                                )}
+                                {checkIn.status === 'missed' && (
+                                  <AlertTriangle className="w-5 h-5 text-warning mt-0.5" />
+                                )}
+                                {checkIn.status === 'alerted' && (
+                                  <Phone className="w-5 h-5 text-destructive mt-0.5" />
+                                )}
+                                <div>
+                                  <p className="font-medium text-sm">
+                                    {date.toLocaleDateString('en-US', {
+                                      weekday: 'short',
+                                      month: 'short',
+                                      day: 'numeric',
+                                    })}
+                                  </p>
+                                  <p className="text-lg font-bold">
+                                    {date.toLocaleTimeString('en-US', {
+                                      hour: '2-digit',
+                                      minute: '2-digit',
+                                    })}
+                                  </p>
+                                  {checkIn.notes && (
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                      {checkIn.notes}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                              <Badge
+                                variant={
+                                  checkIn.status === 'active'
+                                    ? 'default'
+                                    : checkIn.status === 'missed'
+                                    ? 'secondary'
+                                    : 'destructive'
+                                }
+                                className="text-xs"
+                              >
+                                {checkIn.status}
+                              </Badge>
                             </div>
                           </div>
-                          <Badge
-                            variant={
-                              checkIn.status === 'active'
-                                ? 'default'
-                                : checkIn.status === 'missed'
-                                ? 'secondary'
-                                : 'destructive'
-                            }
-                          >
-                            {checkIn.status}
-                          </Badge>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </ScrollArea>
@@ -255,6 +271,7 @@ const CheckInSystem = ({ location }: CheckInSystemProps) => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="1">1 minute</SelectItem>
                   <SelectItem value="5">5 minutes</SelectItem>
                   <SelectItem value="15">15 minutes</SelectItem>
                   <SelectItem value="30">30 minutes</SelectItem>

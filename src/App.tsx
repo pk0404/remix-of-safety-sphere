@@ -10,6 +10,7 @@ import Settings from "./pages/Settings";
 import Notifications from "./pages/Notifications";
 import Volunteers from "./pages/Volunteers";
 import Documentation from "./pages/Documentation";
+import AudioEvidenceLibrary from "./pages/AudioEvidenceLibrary";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/volunteers" element={<Volunteers />} />
             <Route path="/documentation" element={<Documentation />} />
+            <Route path="/audio-library" element={<AudioEvidenceLibrary />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
