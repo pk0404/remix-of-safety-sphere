@@ -3,7 +3,7 @@ import { GoogleMap, Marker, InfoWindow } from '@react-google-maps/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Map, Navigation, AlertTriangle } from 'lucide-react';
+import { Map, Navigation, AlertTriangle, Loader2 } from 'lucide-react';
 import { SupportRequest } from '@/hooks/useVolunteers';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -23,24 +23,24 @@ const mapContainerStyle = {
   height: '300px',
 };
 
-const mapOptions: google.maps.MapOptions = {
-  disableDefaultUI: true,
-  zoomControl: true,
-  mapTypeControl: false,
-  streetViewControl: false,
-  fullscreenControl: false,
-  styles: [
-    {
-      featureType: 'poi',
-      elementType: 'labels',
-      stylers: [{ visibility: 'off' }],
-    },
-  ],
-};
-
 const HelperMapView = ({ location, activeRequests, onNavigate }: HelperMapViewProps) => {
   const mapRef = useRef<google.maps.Map | null>(null);
   const [selectedRequest, setSelectedRequest] = useState<SupportRequest | null>(null);
+  const [mapsReady, setMapsReady] = useState(false);
+
+  // Check if Google Maps is loaded
+  useEffect(() => {
+    const checkMaps = () => {
+      if (typeof google !== 'undefined' && google.maps) {
+        setMapsReady(true);
+      }
+    };
+    
+    checkMaps();
+    const interval = setInterval(checkMaps, 100);
+    
+    return () => clearInterval(interval);
+  }, []);
 
   const center = location
     ? { lat: location.latitude, lng: location.longitude }
@@ -60,15 +60,19 @@ const HelperMapView = ({ location, activeRequests, onNavigate }: HelperMapViewPr
   };
 
   useEffect(() => {
-    if (mapRef.current && location && activeRequests.length > 0) {
-      const bounds = new google.maps.LatLngBounds();
-      bounds.extend({ lat: location.latitude, lng: location.longitude });
-      activeRequests.forEach(req => {
-        bounds.extend({ lat: req.latitude, lng: req.longitude });
-      });
-      mapRef.current.fitBounds(bounds, 50);
+    if (mapRef.current && location && activeRequests.length > 0 && mapsReady) {
+      try {
+        const bounds = new google.maps.LatLngBounds();
+        bounds.extend({ lat: location.latitude, lng: location.longitude });
+        activeRequests.forEach(req => {
+          bounds.extend({ lat: req.latitude, lng: req.longitude });
+        });
+        mapRef.current.fitBounds(bounds, 50);
+      } catch (error) {
+        console.error('Error fitting bounds:', error);
+      }
     }
-  }, [location, activeRequests]);
+  }, [location, activeRequests, mapsReady]);
 
   if (!location) {
     return (
@@ -80,6 +84,32 @@ const HelperMapView = ({ location, activeRequests, onNavigate }: HelperMapViewPr
       </Card>
     );
   }
+
+  if (!mapsReady) {
+    return (
+      <Card className="border-border shadow-card">
+        <CardContent className="py-8 text-center">
+          <Loader2 className="w-8 h-8 mx-auto mb-4 animate-spin text-primary" />
+          <p className="text-muted-foreground">Loading map...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const mapOptions: google.maps.MapOptions = {
+    disableDefaultUI: true,
+    zoomControl: true,
+    mapTypeControl: false,
+    streetViewControl: false,
+    fullscreenControl: false,
+    styles: [
+      {
+        featureType: 'poi',
+        elementType: 'labels',
+        stylers: [{ visibility: 'off' }],
+      },
+    ],
+  };
 
   return (
     <Card className="border-border shadow-card overflow-hidden">

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { GoogleMap, Marker, DirectionsRenderer } from '@react-google-maps/api';
+import { GoogleMap, Marker, DirectionsRenderer, useJsApiLoader } from '@react-google-maps/api';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,10 +10,8 @@ import {
   Clock, 
   CheckCircle2, 
   XCircle, 
-  Phone,
   Award,
   Loader2,
-  ArrowLeft,
   Settings,
   MessageSquare,
   Star,
@@ -29,18 +27,11 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
+import SlidingSidebar from '@/components/SlidingSidebar';
 
 const mapContainerStyle = {
   width: '100%',
   height: '100%',
-};
-
-const mapOptions: google.maps.MapOptions = {
-  disableDefaultUI: true,
-  zoomControl: false,
-  mapTypeControl: false,
-  streetViewControl: false,
-  fullscreenControl: false,
 };
 
 interface HelperNavigationViewProps {
@@ -69,6 +60,21 @@ const HelperNavigationView = ({ onComplete, onCancel }: HelperNavigationViewProp
   const [rating, setRating] = useState(5);
   const [feedback, setFeedback] = useState('');
   const [completing, setCompleting] = useState(false);
+  const [mapsReady, setMapsReady] = useState(false);
+
+  // Check if Google Maps is loaded
+  useEffect(() => {
+    const checkMaps = () => {
+      if (typeof google !== 'undefined' && google.maps) {
+        setMapsReady(true);
+      }
+    };
+    
+    checkMaps();
+    const interval = setInterval(checkMaps, 100);
+    
+    return () => clearInterval(interval);
+  }, []);
 
   // Update helper location periodically
   useEffect(() => {
@@ -83,37 +89,40 @@ const HelperNavigationView = ({ onComplete, onCancel }: HelperNavigationViewProp
 
   // Calculate directions
   useEffect(() => {
-    if (!activeSession || !location) return;
+    if (!activeSession || !location || !mapsReady) return;
 
-    const directionsService = new google.maps.DirectionsService();
-    const destination = {
-      lat: activeSession.requester_lat!,
-      lng: activeSession.requester_lng!,
-    };
+    try {
+      const directionsService = new google.maps.DirectionsService();
+      const destination = {
+        lat: activeSession.requester_lat!,
+        lng: activeSession.requester_lng!,
+      };
 
-    directionsService.route(
-      {
-        origin: { lat: location.latitude, lng: location.longitude },
-        destination,
-        travelMode: google.maps.TravelMode.WALKING,
-      },
-      (result, status) => {
-        if (status === google.maps.DirectionsStatus.OK && result) {
-          setDirections(result);
-          const leg = result.routes[0]?.legs[0];
-          if (leg) {
-            setDistanceRemaining(leg.distance?.text || '');
-            setEta(leg.duration?.text || '');
-            const step = leg.steps[0];
-            if (step?.instructions) {
-              // Strip HTML tags from instructions
-              setNextInstruction(step.instructions.replace(/<[^>]*>/g, ''));
+      directionsService.route(
+        {
+          origin: { lat: location.latitude, lng: location.longitude },
+          destination,
+          travelMode: google.maps.TravelMode.WALKING,
+        },
+        (result, status) => {
+          if (status === google.maps.DirectionsStatus.OK && result) {
+            setDirections(result);
+            const leg = result.routes[0]?.legs[0];
+            if (leg) {
+              setDistanceRemaining(leg.distance?.text || '');
+              setEta(leg.duration?.text || '');
+              const step = leg.steps[0];
+              if (step?.instructions) {
+                setNextInstruction(step.instructions.replace(/<[^>]*>/g, ''));
+              }
             }
           }
         }
-      }
-    );
-  }, [activeSession, location]);
+      );
+    } catch (error) {
+      console.error('Error calculating directions:', error);
+    }
+  }, [activeSession, location, mapsReady]);
 
   const onMapLoad = (map: google.maps.Map) => {
     mapRef.current = map;
@@ -143,7 +152,20 @@ const HelperNavigationView = ({ onComplete, onCancel }: HelperNavigationViewProp
   };
 
   if (!activeSession || !location) {
-    return null;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!mapsReady) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <p className="text-muted-foreground">Loading maps...</p>
+      </div>
+    );
   }
 
   const requesterLocation = {
@@ -151,11 +173,20 @@ const HelperNavigationView = ({ onComplete, onCancel }: HelperNavigationViewProp
     lng: activeSession.requester_lng!,
   };
 
+  const mapOptions: google.maps.MapOptions = {
+    disableDefaultUI: true,
+    zoomControl: false,
+    mapTypeControl: false,
+    streetViewControl: false,
+    fullscreenControl: false,
+  };
+
   return (
     <>
+      <SlidingSidebar />
       <div className="flex flex-col h-full min-h-screen bg-background">
-        {/* Top Navigation Bar (like Waze/Google Maps) */}
-        <div className="bg-card border-b border-border p-3 flex items-center gap-3 z-10">
+        {/* Top Navigation Bar */}
+        <div className="bg-card border-b border-border p-3 flex items-center gap-3 z-10 pt-16">
           <Button variant="ghost" size="icon" onClick={handleCancel}>
             <XCircle className="w-5 h-5" />
           </Button>
@@ -172,10 +203,10 @@ const HelperNavigationView = ({ onComplete, onCancel }: HelperNavigationViewProp
         </div>
 
         {/* Speed/Distance Indicator */}
-        <div className="absolute top-20 left-4 z-10 flex flex-col gap-2">
+        <div className="absolute top-32 left-4 z-10 flex flex-col gap-2">
           <div className="bg-card/95 backdrop-blur-sm rounded-xl p-3 shadow-lg border border-border">
-            <p className="text-2xl font-bold text-foreground">{distanceRemaining}</p>
-            <p className="text-xs text-muted-foreground">{eta}</p>
+            <p className="text-2xl font-bold text-foreground">{distanceRemaining || 'Calculating...'}</p>
+            <p className="text-xs text-muted-foreground">{eta || 'ETA loading...'}</p>
           </div>
         </div>
 
@@ -194,7 +225,7 @@ const HelperNavigationView = ({ onComplete, onCancel }: HelperNavigationViewProp
               icon={{
                 path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
                 scale: 8,
-                fillColor: 'hsl(217, 91%, 60%)',
+                fillColor: '#3b82f6',
                 fillOpacity: 1,
                 strokeColor: '#fff',
                 strokeWeight: 2,
@@ -208,7 +239,7 @@ const HelperNavigationView = ({ onComplete, onCancel }: HelperNavigationViewProp
               icon={{
                 path: google.maps.SymbolPath.CIRCLE,
                 scale: 12,
-                fillColor: 'hsl(0, 84%, 60%)',
+                fillColor: '#ef4444',
                 fillOpacity: 1,
                 strokeColor: '#fff',
                 strokeWeight: 3,
@@ -222,7 +253,7 @@ const HelperNavigationView = ({ onComplete, onCancel }: HelperNavigationViewProp
                 options={{
                   suppressMarkers: true,
                   polylineOptions: {
-                    strokeColor: 'hsl(217, 91%, 60%)',
+                    strokeColor: '#3b82f6',
                     strokeWeight: 6,
                     strokeOpacity: 0.9,
                   },
@@ -249,29 +280,32 @@ const HelperNavigationView = ({ onComplete, onCancel }: HelperNavigationViewProp
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">ETA</p>
-                <p className="text-2xl font-bold text-foreground">{eta}</p>
+                <p className="text-2xl font-bold text-foreground">{eta || '--'}</p>
               </div>
               <div className="text-right">
                 <p className="text-sm text-muted-foreground">Distance</p>
-                <p className="text-xl font-semibold">{distanceRemaining}</p>
+                <p className="text-xl font-semibold">{distanceRemaining || '--'}</p>
               </div>
               <Badge variant="secondary" className="text-sm">
                 Walking
               </Badge>
             </div>
 
-            {/* OTP Verification Section */}
+            {/* OTP Verification Section - Helper must ask User for OTP */}
             {!activeSession.otp_verified ? (
               <div className="bg-warning/10 border border-warning/30 rounded-xl p-4 space-y-3">
                 <div className="flex items-center gap-2">
                   <MapPin className="w-5 h-5 text-warning" />
-                  <span className="font-medium">Arrived? Enter OTP to verify</span>
+                  <span className="font-medium">Arrived? Ask User for their OTP</span>
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  The user has a 4-digit code. Ask them for it and enter below to verify your arrival.
+                </p>
                 <div className="flex gap-2">
                   <Input
                     placeholder="Enter 4-digit OTP"
                     value={otpInput}
-                    onChange={(e) => setOtpInput(e.target.value)}
+                    onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, '').slice(0, 4))}
                     maxLength={4}
                     className="text-center text-xl font-mono tracking-widest"
                   />
@@ -302,7 +336,7 @@ const HelperNavigationView = ({ onComplete, onCancel }: HelperNavigationViewProp
             {/* Time Info */}
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Clock className="w-4 h-4" />
-              <span>Started {formatDistanceToNow(new Date(activeSession.started_at), { addSuffix: true })}</span>
+              <span>Started {activeSession.started_at ? formatDistanceToNow(new Date(activeSession.started_at), { addSuffix: true }) : 'recently'}</span>
             </div>
           </CardContent>
         </Card>

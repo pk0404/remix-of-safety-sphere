@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Home,
@@ -72,7 +72,7 @@ const helperNavItems: NavItem[] = [
 
 const SlidingSidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeHref, setActiveHref] = useState<string | null>(null);
+  const [clickedHref, setClickedHref] = useState<string | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
@@ -80,22 +80,25 @@ const SlidingSidebar = () => {
 
   const navItems = role === 'helper' ? helperNavItems : userNavItems;
 
+  // Reset clicked href when location changes
+  useEffect(() => {
+    setClickedHref(null);
+  }, [location.pathname]);
+
   const isActive = (href: string) => {
-    // Check if this item was clicked
-    if (activeHref === href) return true;
-    // Only highlight exact page matches (not hash links)
-    if (href === '/') return location.pathname === '/' && !activeHref;
+    // Only show active for clicked items or exact page matches
+    if (clickedHref === href) return true;
+    if (href === '/') return location.pathname === '/' && !clickedHref && !location.hash;
     if (href.startsWith('/#')) return false; // Hash links only active when clicked
-    return location.pathname === href;
+    return location.pathname === href && !clickedHref;
   };
 
   const handleNavClick = (href: string) => {
-    setActiveHref(href);
+    setClickedHref(href);
     setIsOpen(false);
     
     if (href.startsWith('/#')) {
       const section = href.substring(2);
-      // Navigate to home first if not there
       if (location.pathname !== '/') {
         navigate('/');
         setTimeout(() => {
@@ -104,15 +107,12 @@ const SlidingSidebar = () => {
       } else {
         document.getElementById(section)?.scrollIntoView({ behavior: 'smooth' });
       }
-    } else {
-      // Clear active href for page navigation (router will handle it)
-      setActiveHref(null);
     }
   };
 
   const getSectionItems = (section: string) => navItems.filter(item => item.section === section);
 
-  const NavLink = ({ item }: { item: NavItem }) => {
+  const NavLinkItem = ({ item }: { item: NavItem }) => {
     const Icon = item.icon;
     const active = isActive(item.href);
 
@@ -123,7 +123,7 @@ const SlidingSidebar = () => {
           className={cn(
             'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-sm w-full text-left',
             active
-              ? 'bg-destructive text-destructive-foreground font-medium'
+              ? 'bg-primary text-primary-foreground font-medium'
               : 'text-muted-foreground hover:bg-muted hover:text-foreground'
           )}
         >
@@ -142,11 +142,11 @@ const SlidingSidebar = () => {
       <SheetClose asChild>
         <Link
           to={item.href}
-          onClick={() => handleNavClick(item.href)}
+          onClick={() => setClickedHref(null)}
           className={cn(
             'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-sm',
             active
-              ? 'bg-destructive text-destructive-foreground font-medium'
+              ? 'bg-primary text-primary-foreground font-medium'
               : 'text-muted-foreground hover:bg-muted hover:text-foreground'
           )}
         >
@@ -203,7 +203,7 @@ const SlidingSidebar = () => {
                 </p>
                 <nav className="space-y-1">
                   {getSectionItems('main').map((item) => (
-                    <NavLink key={item.href + item.label} item={item} />
+                    <NavLinkItem key={item.href + item.label} item={item} />
                   ))}
                 </nav>
               </div>
@@ -216,7 +216,7 @@ const SlidingSidebar = () => {
                   </p>
                   <nav className="space-y-1">
                     {getSectionItems('safety').map((item) => (
-                      <NavLink key={item.href + item.label} item={item} />
+                      <NavLinkItem key={item.href + item.label} item={item} />
                     ))}
                   </nav>
                 </div>
@@ -230,7 +230,7 @@ const SlidingSidebar = () => {
                   </p>
                   <nav className="space-y-1">
                     {getSectionItems('insights').map((item) => (
-                      <NavLink key={item.href + item.label} item={item} />
+                      <NavLinkItem key={item.href + item.label} item={item} />
                     ))}
                   </nav>
                 </div>
@@ -244,7 +244,7 @@ const SlidingSidebar = () => {
                   </p>
                   <nav className="space-y-1">
                     {getSectionItems('community').map((item) => (
-                      <NavLink key={item.href + item.label} item={item} />
+                      <NavLinkItem key={item.href + item.label} item={item} />
                     ))}
                   </nav>
                 </div>
@@ -257,7 +257,7 @@ const SlidingSidebar = () => {
                 </p>
                 <nav className="space-y-1">
                   {getSectionItems('account').map((item) => (
-                    <NavLink key={item.href + item.label} item={item} />
+                    <NavLinkItem key={item.href + item.label} item={item} />
                   ))}
                 </nav>
               </div>

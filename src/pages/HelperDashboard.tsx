@@ -125,7 +125,7 @@ const HelperDashboard = () => {
     );
   }
 
-  // Show full-screen navigation view when there's an active session (like Waze/Google Maps)
+  // Show full-screen navigation view when there's an active session
   if (activeSession) {
     return (
       <GoogleMapsProvider>
@@ -170,16 +170,16 @@ const HelperDashboard = () => {
                 />
               </div>
 
-              {/* Quick Stats - Aligned Grid */}
+              {/* Quick Stats */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="text-center p-3 bg-muted/50 rounded-lg">
-                  <p className="text-lg font-bold">{volunteer?.total_responses}</p>
+                  <p className="text-lg font-bold">{volunteer?.total_responses || 0}</p>
                   <p className="text-xs text-muted-foreground">Helped</p>
                 </div>
                 <div className="text-center p-3 bg-muted/50 rounded-lg">
                   <p className="text-lg font-bold flex items-center justify-center gap-1">
                     <Star className="w-4 h-4 text-warning" />
-                    {volunteer?.rating}
+                    {volunteer?.rating || 5.0}
                   </p>
                   <p className="text-xs text-muted-foreground">Rating</p>
                 </div>
