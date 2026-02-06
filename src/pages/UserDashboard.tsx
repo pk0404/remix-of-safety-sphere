@@ -81,12 +81,11 @@ const UserDashboard = () => {
     }
   }, []);
 
-  // If there's an active help session, show the full-screen tracker (like Grab)
+  // If there's an active help session, show the full-screen tracker
   if (activeSession) {
     return (
       <GoogleMapsProvider>
         <div className="min-h-screen bg-background">
-          <SlidingSidebar />
           <UserHelperTracker />
           <OfflineIndicator />
         </div>
