@@ -3,13 +3,10 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Home,
   Shield,
-  Users,
   Bell,
   Settings,
   Map,
   Phone,
-  FileText,
-  HelpCircle,
   Menu,
   LogIn,
   LogOut,
@@ -40,6 +37,7 @@ interface NavItem {
   section?: string;
 }
 
+// User-specific navigation items (NO helper items here)
 const userNavItems: NavItem[] = [
   { label: 'Dashboard', icon: Home, href: '/', section: 'main' },
   { label: 'Audio Library', icon: FileAudio, href: '/audio-library', section: 'main' },
@@ -51,23 +49,18 @@ const userNavItems: NavItem[] = [
   { label: 'Emergency Contacts', icon: Phone, href: '/#contacts', section: 'safety' },
   { label: 'Report Incident', icon: AlertTriangle, href: '/#report', section: 'safety' },
   { label: 'Analytics', icon: BarChart3, href: '/#analytics', section: 'insights' },
-  { label: 'Volunteer Network', icon: Users, href: '/volunteers', section: 'community' },
   { label: 'Notifications', icon: Bell, href: '/notifications', section: 'account' },
   { label: 'Settings', icon: Settings, href: '/settings', section: 'account' },
-  { label: 'Documentation', icon: FileText, href: '/documentation', section: 'account' },
-  { label: 'Help & Support', icon: HelpCircle, href: '/#help', section: 'account' },
 ];
 
+// Helper-ONLY navigation items (NO user items here - completely separate)
 const helperNavItems: NavItem[] = [
   { label: 'Helper Dashboard', icon: Home, href: '/', section: 'main' },
   { label: 'Active Requests', icon: AlertTriangle, href: '/#requests', section: 'main' },
   { label: 'Map View', icon: Map, href: '/#map', section: 'main' },
   { label: 'My Rewards', icon: Award, href: '/#rewards', section: 'main' },
-  { label: 'Volunteer Network', icon: Users, href: '/volunteers', section: 'community' },
   { label: 'Notifications', icon: Bell, href: '/notifications', section: 'account' },
   { label: 'Settings', icon: Settings, href: '/settings', section: 'account' },
-  { label: 'Documentation', icon: FileText, href: '/documentation', section: 'account' },
-  { label: 'Help & Support', icon: HelpCircle, href: '/#help', section: 'account' },
 ];
 
 const SlidingSidebar = () => {
@@ -236,8 +229,8 @@ const SlidingSidebar = () => {
                 </div>
               )}
 
-              {/* Community */}
-              {getSectionItems('community').length > 0 && (
+              {/* Community - Only for users */}
+              {role !== 'helper' && getSectionItems('community').length > 0 && (
                 <div>
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-3">
                     Community

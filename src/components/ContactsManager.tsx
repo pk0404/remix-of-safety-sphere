@@ -25,6 +25,7 @@ export interface Contact {
   id: string;
   name: string;
   phone: string;
+  email?: string;
   relationship: string;
 }
 
@@ -46,6 +47,7 @@ const ContactsManager = ({ contacts: propContacts, setContacts }: ContactsManage
   const [isOpen, setIsOpen] = useState(false);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [relationship, setRelationship] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -54,6 +56,7 @@ const ContactsManager = ({ contacts: propContacts, setContacts }: ContactsManage
     id: c.id,
     name: c.name,
     phone: c.phone,
+    email: c.email || '',
     relationship: c.relationship || ''
   })) : (propContacts || []);
 
@@ -69,7 +72,7 @@ const ContactsManager = ({ contacts: propContacts, setContacts }: ContactsManage
   const handleAddContact = async () => {
     if (!name || !phone || !relationship) {
       toast.error('Missing Information', {
-        description: 'Please fill in all fields.',
+        description: 'Please fill in name, phone, and relationship.',
       });
       return;
     }
@@ -81,6 +84,7 @@ const ContactsManager = ({ contacts: propContacts, setContacts }: ContactsManage
       const result = await addDbContact({
         name,
         phone,
+        email: email.trim() || null,
         relationship,
         is_primary: contacts.length === 0, // First contact is primary
       });
@@ -88,6 +92,7 @@ const ContactsManager = ({ contacts: propContacts, setContacts }: ContactsManage
       if (result) {
         setName('');
         setPhone('');
+        setEmail('');
         setRelationship('');
         setIsOpen(false);
       }
@@ -97,6 +102,7 @@ const ContactsManager = ({ contacts: propContacts, setContacts }: ContactsManage
         id: Date.now().toString(),
         name,
         phone,
+        email: email.trim() || undefined,
         relationship,
       };
 
@@ -106,6 +112,7 @@ const ContactsManager = ({ contacts: propContacts, setContacts }: ContactsManage
 
       setName('');
       setPhone('');
+      setEmail('');
       setRelationship('');
       setIsOpen(false);
 
@@ -174,6 +181,16 @@ const ContactsManager = ({ contacts: propContacts, setContacts }: ContactsManage
                 />
               </div>
               <div>
+                <label className="text-sm text-muted-foreground mb-1 block">Email (for emergency alerts)</label>
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="contact@email.com"
+                  className="bg-background border-border"
+                />
+              </div>
+              <div>
                 <label className="text-sm text-muted-foreground mb-1 block">Relationship</label>
                 <Select value={relationship} onValueChange={setRelationship}>
                   <SelectTrigger className="bg-background border-border">
@@ -188,7 +205,7 @@ const ContactsManager = ({ contacts: propContacts, setContacts }: ContactsManage
                   </SelectContent>
                 </Select>
               </div>
-              <Button 
+              <Button
                 onClick={handleAddContact} 
                 className="w-full gradient-primary text-primary-foreground"
                 disabled={submitting}

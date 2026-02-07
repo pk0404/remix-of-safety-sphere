@@ -7,6 +7,7 @@ export interface EmergencyContact {
   id: string;
   name: string;
   phone: string;
+  email: string | null;
   relationship: string | null;
   is_primary: boolean;
 }
@@ -31,7 +32,18 @@ export const useEmergencyContacts = () => {
         .order('is_primary', { ascending: false });
 
       if (error) throw error;
-      setContacts(data || []);
+      
+      // Map to include email field
+      const mappedContacts: EmergencyContact[] = (data || []).map((c: any) => ({
+        id: c.id,
+        name: c.name,
+        phone: c.phone,
+        email: c.email || null,
+        relationship: c.relationship,
+        is_primary: c.is_primary || false,
+      }));
+      
+      setContacts(mappedContacts);
     } catch (error) {
       console.error('Error fetching contacts:', error);
       toast.error('Failed to load contacts');
@@ -54,6 +66,7 @@ export const useEmergencyContacts = () => {
           user_id: user.id,
           name: contact.name,
           phone: contact.phone,
+          email: contact.email,
           relationship: contact.relationship,
           is_primary: contact.is_primary
         })
@@ -61,9 +74,19 @@ export const useEmergencyContacts = () => {
         .single();
 
       if (error) throw error;
-      setContacts(prev => [...prev, data]);
+      
+      const newContact: EmergencyContact = {
+        id: data.id,
+        name: data.name,
+        phone: data.phone,
+        email: (data as any).email || null,
+        relationship: data.relationship,
+        is_primary: data.is_primary || false,
+      };
+      
+      setContacts(prev => [...prev, newContact]);
       toast.success('Contact added');
-      return data;
+      return newContact;
     } catch (error) {
       console.error('Error adding contact:', error);
       toast.error('Failed to add contact');
