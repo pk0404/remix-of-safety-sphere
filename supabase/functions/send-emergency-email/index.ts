@@ -74,10 +74,20 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     // Send email to each contact using Resend HTTP API
-    const emailPromises = contacts
-      .filter((contact: { phone?: string; name?: string }) => contact.phone || contact.name)
-      .map(async (contact: { name: string; relationship?: string; phone: string }) => {
-        console.log(`[Emergency Email] Sending alert to ${contact.name}`);
+    // Only send to contacts with email addresses
+    const contactsWithEmail = contacts.filter((contact: { email?: string; name?: string }) => contact.email);
+    
+    if (contactsWithEmail.length === 0) {
+      console.log("[Emergency Email] No contacts have email addresses configured");
+      return new Response(
+        JSON.stringify({ success: false, message: "No contacts have email addresses configured" }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    
+    const emailPromises = contactsWithEmail
+      .map(async (contact: { name: string; relationship?: string; phone: string; email: string }) => {
+        console.log(`[Emergency Email] Sending alert to ${contact.name} at ${contact.email}`);
 
         try {
           const emailHtml = `
@@ -152,7 +162,7 @@ const handler = async (req: Request): Promise<Response> => {
             </html>
           `;
 
-          // Using Resend HTTP API
+          // Using Resend HTTP API - send to actual contact email
           const response = await fetch("https://api.resend.com/emails", {
             method: "POST",
             headers: {
@@ -161,7 +171,7 @@ const handler = async (req: Request): Promise<Response> => {
             },
             body: JSON.stringify({
               from: "SafeHer Emergency <onboarding@resend.dev>",
-              to: ["onboarding@resend.dev"], // Using Resend test email for development
+              to: [contact.email], // Send to actual contact email
               subject: `🚨 URGENT: ${userName} has missed ${missed_count} safety check-ins`,
               html: emailHtml,
             }),
