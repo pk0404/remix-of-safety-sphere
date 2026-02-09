@@ -74,8 +74,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
+    // Clear cached role and session data before signing out
+    sessionStorage.removeItem('safeher_role_cache');
     await supabase.auth.signOut();
-    // Clear session storage on sign out
     sessionStorage.clear();
   };
 

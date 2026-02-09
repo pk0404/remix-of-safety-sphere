@@ -113,32 +113,35 @@ const UserDashboard = () => {
             <p className="text-muted-foreground text-sm">Your personal safety command center</p>
           </div>
 
+          {/* SOS + Quick Actions Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <section id="sos" className="bg-card rounded-2xl border border-border p-4 sm:p-6 shadow-card">
+              <div className="text-center mb-4">
+                <h2 className="text-xl font-bold text-foreground mb-1">Emergency SOS</h2>
+                <p className="text-muted-foreground text-xs">
+                  Hold the button for 2 seconds to trigger alert
+                </p>
+              </div>
+              <div className="flex justify-center">
+                <SOSButton location={location} contacts={formattedContacts} />
+              </div>
+            </section>
+
+            <section id="help">
+              <UserRequestHelpCard />
+            </section>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="mb-4">
+            <QuickActions location={location} />
+          </div>
+
           {/* Two column layout for desktop */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
             
-            {/* Left Column - Emergency & Actions */}
+            {/* Left Column */}
             <div className="space-y-4">
-              {/* SOS Section */}
-              <section id="sos" className="bg-card rounded-2xl border border-border p-4 sm:p-6 shadow-card">
-                <div className="text-center mb-4">
-                  <h2 className="text-xl font-bold text-foreground mb-1">Emergency SOS</h2>
-                  <p className="text-muted-foreground text-xs">
-                    Hold the button for 2 seconds to trigger alert
-                  </p>
-                </div>
-                <div className="flex justify-center">
-                  <SOSButton location={location} contacts={formattedContacts} />
-                </div>
-              </section>
-
-              {/* Request Help Card */}
-              <section id="help">
-                <UserRequestHelpCard />
-              </section>
-
-              {/* Quick Actions */}
-              <QuickActions location={location} />
-
               {/* Live Location */}
               <section id="location">
                 <LiveLocation 
@@ -164,11 +167,19 @@ const UserDashboard = () => {
               <section id="checkin">
                 <CheckInSystem location={location} />
               </section>
+
+              {/* Emergency Contacts */}
+              <section id="contacts" className="bg-card rounded-2xl border border-border p-4 shadow-card">
+                <ContactsManager 
+                  contacts={formattedContacts} 
+                  setContacts={() => {}}
+                />
+              </section>
             </div>
 
-            {/* Right Column - Map & Info */}
+            {/* Right Column */}
             <div className="space-y-4">
-              {/* Safety Map with AI Integration */}
+              {/* Safety Map */}
               <section id="map">
                 <SafetyMapReal location={location} />
               </section>
@@ -188,14 +199,6 @@ const UserDashboard = () => {
 
               {/* Emergency Numbers */}
               <EmergencyNumbers />
-
-              {/* Emergency Contacts */}
-              <section id="contacts" className="bg-card rounded-2xl border border-border p-4 shadow-card">
-                <ContactsManager 
-                  contacts={formattedContacts} 
-                  setContacts={() => {}}
-                />
-              </section>
 
               {/* Safety Tips */}
               <SafetyTips />

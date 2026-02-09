@@ -37,7 +37,7 @@ interface NavItem {
   section?: string;
 }
 
-// User-specific navigation items (NO helper items here)
+// User-specific navigation items
 const userNavItems: NavItem[] = [
   { label: 'Dashboard', icon: Home, href: '/', section: 'main' },
   { label: 'Audio Library', icon: FileAudio, href: '/audio-library', section: 'main' },
@@ -47,17 +47,16 @@ const userNavItems: NavItem[] = [
   { label: 'Journey Tracker', icon: Navigation, href: '/#journey', section: 'safety' },
   { label: 'Check-In', icon: CheckCircle2, href: '/#checkin', section: 'safety' },
   { label: 'Emergency Contacts', icon: Phone, href: '/#contacts', section: 'safety' },
-  { label: 'Report Incident', icon: AlertTriangle, href: '/#report', section: 'safety' },
   { label: 'Analytics', icon: BarChart3, href: '/#analytics', section: 'insights' },
   { label: 'Notifications', icon: Bell, href: '/notifications', section: 'account' },
   { label: 'Settings', icon: Settings, href: '/settings', section: 'account' },
 ];
 
-// Helper-ONLY navigation items (NO user items here - completely separate)
+// Helper-ONLY navigation items
 const helperNavItems: NavItem[] = [
-  { label: 'Helper Dashboard', icon: Home, href: '/', section: 'main' },
+  { label: 'Dashboard', icon: Home, href: '/', section: 'main' },
+  { label: 'Requests Map', icon: Map, href: '/#map', section: 'main' },
   { label: 'Active Requests', icon: AlertTriangle, href: '/#requests', section: 'main' },
-  { label: 'Map View', icon: Map, href: '/#map', section: 'main' },
   { label: 'My Rewards', icon: Award, href: '/#rewards', section: 'main' },
   { label: 'Notifications', icon: Bell, href: '/notifications', section: 'account' },
   { label: 'Settings', icon: Settings, href: '/settings', section: 'account' },
@@ -65,7 +64,6 @@ const helperNavItems: NavItem[] = [
 
 const SlidingSidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [clickedHref, setClickedHref] = useState<string | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
@@ -73,21 +71,13 @@ const SlidingSidebar = () => {
 
   const navItems = role === 'helper' ? helperNavItems : userNavItems;
 
-  // Reset clicked href when location changes
-  useEffect(() => {
-    setClickedHref(null);
-  }, [location.pathname]);
-
   const isActive = (href: string) => {
-    // Only show active for clicked items or exact page matches
-    if (clickedHref === href) return true;
-    if (href === '/') return location.pathname === '/' && !clickedHref && !location.hash;
-    if (href.startsWith('/#')) return false; // Hash links only active when clicked
-    return location.pathname === href && !clickedHref;
+    if (href === '/') return location.pathname === '/' && !location.hash;
+    if (href.startsWith('/#')) return location.hash === href.substring(1);
+    return location.pathname === href;
   };
 
   const handleNavClick = (href: string) => {
-    setClickedHref(href);
     setIsOpen(false);
     
     if (href.startsWith('/#')) {
@@ -96,9 +86,11 @@ const SlidingSidebar = () => {
         navigate('/');
         setTimeout(() => {
           document.getElementById(section)?.scrollIntoView({ behavior: 'smooth' });
-        }, 100);
+        }, 300);
       } else {
-        document.getElementById(section)?.scrollIntoView({ behavior: 'smooth' });
+        setTimeout(() => {
+          document.getElementById(section)?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
       }
     }
   };
@@ -111,23 +103,20 @@ const SlidingSidebar = () => {
 
     if (item.href.startsWith('/#')) {
       return (
-        <button
-          onClick={() => handleNavClick(item.href)}
-          className={cn(
-            'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-sm w-full text-left',
-            active
-              ? 'bg-primary text-primary-foreground font-medium'
-              : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-          )}
-        >
-          <Icon className="w-4 h-4 shrink-0" />
-          <span className="flex-1">{item.label}</span>
-          {item.badge && (
-            <Badge variant="secondary" className="text-xs">
-              {item.badge}
-            </Badge>
-          )}
-        </button>
+        <SheetClose asChild>
+          <button
+            onClick={() => handleNavClick(item.href)}
+            className={cn(
+              'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-sm w-full text-left',
+              active
+                ? 'bg-primary text-primary-foreground font-medium'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+            )}
+          >
+            <Icon className="w-4 h-4 shrink-0" />
+            <span className="flex-1">{item.label}</span>
+          </button>
+        </SheetClose>
       );
     }
 
@@ -135,7 +124,6 @@ const SlidingSidebar = () => {
       <SheetClose asChild>
         <Link
           to={item.href}
-          onClick={() => setClickedHref(null)}
           className={cn(
             'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-sm',
             active
@@ -145,160 +133,136 @@ const SlidingSidebar = () => {
         >
           <Icon className="w-4 h-4 shrink-0" />
           <span className="flex-1">{item.label}</span>
-          {item.badge && (
-            <Badge variant="secondary" className="text-xs">
-              {item.badge}
-            </Badge>
-          )}
         </Link>
       </SheetClose>
     );
   };
 
   return (
-    <>
-      {/* Menu Toggle Button - Fixed Position */}
-      <Sheet open={isOpen} onOpenChange={setIsOpen}>
-        <SheetTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="fixed top-3 left-3 z-50 bg-card/90 backdrop-blur-sm shadow-md border border-border hover:bg-accent"
-          >
-            <Menu className="w-5 h-5" />
-          </Button>
-        </SheetTrigger>
-        
-        <SheetContent side="left" className="w-72 p-0 flex flex-col">
-          {/* Header */}
-          <SheetHeader className="p-4 border-b border-border">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
-                <Shield className="w-5 h-5 text-primary-foreground" />
-                <Heart className="absolute w-2 h-2 text-primary-foreground fill-current" />
-              </div>
-              <div>
-                <SheetTitle className="text-left font-bold text-foreground">SafeHer</SheetTitle>
-                <p className="text-xs text-muted-foreground">
-                  {role === 'helper' ? 'Helper Mode' : 'Your Safety Companion'}
-                </p>
-              </div>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+      <SheetTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="fixed top-3 left-3 z-50 bg-card/90 backdrop-blur-sm shadow-md border border-border hover:bg-accent"
+        >
+          <Menu className="w-5 h-5" />
+        </Button>
+      </SheetTrigger>
+      
+      <SheetContent side="left" className="w-72 p-0 flex flex-col">
+        {/* Header */}
+        <SheetHeader className="p-4 border-b border-border">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center relative">
+              <Shield className="w-5 h-5 text-primary-foreground" />
+              <Heart className="absolute w-2 h-2 text-primary-foreground fill-current" />
             </div>
-          </SheetHeader>
-
-          {/* Navigation */}
-          <ScrollArea className="flex-1 p-4">
-            <div className="space-y-6">
-              {/* Main Navigation */}
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-3">
-                  Main
-                </p>
-                <nav className="space-y-1">
-                  {getSectionItems('main').map((item) => (
-                    <NavLinkItem key={item.href + item.label} item={item} />
-                  ))}
-                </nav>
-              </div>
-
-              {/* Safety Features (User only) */}
-              {role !== 'helper' && getSectionItems('safety').length > 0 && (
-                <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-3">
-                    Safety Features
-                  </p>
-                  <nav className="space-y-1">
-                    {getSectionItems('safety').map((item) => (
-                      <NavLinkItem key={item.href + item.label} item={item} />
-                    ))}
-                  </nav>
-                </div>
-              )}
-
-              {/* Insights */}
-              {getSectionItems('insights').length > 0 && (
-                <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-3">
-                    Insights
-                  </p>
-                  <nav className="space-y-1">
-                    {getSectionItems('insights').map((item) => (
-                      <NavLinkItem key={item.href + item.label} item={item} />
-                    ))}
-                  </nav>
-                </div>
-              )}
-
-              {/* Community - Only for users */}
-              {role !== 'helper' && getSectionItems('community').length > 0 && (
-                <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-3">
-                    Community
-                  </p>
-                  <nav className="space-y-1">
-                    {getSectionItems('community').map((item) => (
-                      <NavLinkItem key={item.href + item.label} item={item} />
-                    ))}
-                  </nav>
-                </div>
-              )}
-
-              {/* Account */}
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-3">
-                  Account
-                </p>
-                <nav className="space-y-1">
-                  {getSectionItems('account').map((item) => (
-                    <NavLinkItem key={item.href + item.label} item={item} />
-                  ))}
-                </nav>
-              </div>
+            <div>
+              <SheetTitle className="text-left font-bold text-foreground">SafeHer</SheetTitle>
+              <p className="text-xs text-muted-foreground">
+                {role === 'helper' ? 'Helper Mode' : 'Your Safety Companion'}
+              </p>
             </div>
-          </ScrollArea>
-
-          {/* User Section */}
-          <div className="p-4 border-t border-border mt-auto">
-            {user ? (
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 px-3 py-2 bg-muted/50 rounded-lg">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <User className="w-4 h-4 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{user.email}</p>
-                    <p className="text-xs text-muted-foreground capitalize">
-                      {role || 'user'} account
-                    </p>
-                  </div>
-                </div>
-                <SheetClose asChild>
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => {
-                      signOut();
-                    }}
-                  >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Sign Out
-                  </Button>
-                </SheetClose>
-              </div>
-            ) : (
-              <SheetClose asChild>
-                <Link to="/auth">
-                  <Button className="w-full">
-                    <LogIn className="w-4 h-4 mr-2" />
-                    Sign In
-                  </Button>
-                </Link>
-              </SheetClose>
-            )}
           </div>
-        </SheetContent>
-      </Sheet>
-    </>
+        </SheetHeader>
+
+        {/* Navigation */}
+        <ScrollArea className="flex-1 p-4">
+          <div className="space-y-6">
+            {/* Main */}
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-3">
+                Main
+              </p>
+              <nav className="space-y-1">
+                {getSectionItems('main').map((item) => (
+                  <NavLinkItem key={item.href + item.label} item={item} />
+                ))}
+              </nav>
+            </div>
+
+            {/* Safety Features (User only) */}
+            {role !== 'helper' && getSectionItems('safety').length > 0 && (
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-3">
+                  Safety Features
+                </p>
+                <nav className="space-y-1">
+                  {getSectionItems('safety').map((item) => (
+                    <NavLinkItem key={item.href + item.label} item={item} />
+                  ))}
+                </nav>
+              </div>
+            )}
+
+            {/* Insights (User only) */}
+            {getSectionItems('insights').length > 0 && (
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-3">
+                  Insights
+                </p>
+                <nav className="space-y-1">
+                  {getSectionItems('insights').map((item) => (
+                    <NavLinkItem key={item.href + item.label} item={item} />
+                  ))}
+                </nav>
+              </div>
+            )}
+
+            {/* Account */}
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-3">
+                Account
+              </p>
+              <nav className="space-y-1">
+                {getSectionItems('account').map((item) => (
+                  <NavLinkItem key={item.href + item.label} item={item} />
+                ))}
+              </nav>
+            </div>
+          </div>
+        </ScrollArea>
+
+        {/* User Section */}
+        <div className="p-4 border-t border-border mt-auto">
+          {user ? (
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 px-3 py-2 bg-muted/50 rounded-lg">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  <User className="w-4 h-4 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{user.email}</p>
+                  <p className="text-xs text-muted-foreground capitalize">
+                    {role || 'user'} account
+                  </p>
+                </div>
+              </div>
+              <SheetClose asChild>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => signOut()}
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </Button>
+              </SheetClose>
+            </div>
+          ) : (
+            <SheetClose asChild>
+              <Link to="/auth">
+                <Button className="w-full">
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Sign In
+                </Button>
+              </Link>
+            </SheetClose>
+          )}
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 };
 
