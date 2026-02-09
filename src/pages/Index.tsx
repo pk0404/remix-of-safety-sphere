@@ -12,8 +12,8 @@ const Index = () => {
   const { user, loading: authLoading } = useAuth();
   const { role, loading: roleLoading, hasRole } = useUserRole();
 
-  // Show loading while checking auth
-  if (authLoading || (user && roleLoading)) {
+  // Show loading only if auth is loading OR role hasn't resolved yet (and no cache)
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -95,6 +95,17 @@ const Index = () => {
           <p className="text-xs text-muted-foreground">
             By continuing, you agree to our Terms of Service and Privacy Policy
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show brief loader only if role is still loading from DB (no cache hit)
+  if (roleLoading && !hasRole) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-6 h-6 animate-spin mx-auto text-primary" />
         </div>
       </div>
     );

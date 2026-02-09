@@ -11,9 +11,38 @@ interface UseUserRoleReturn {
   hasRole: boolean;
 }
 
+const ROLE_CACHE_KEY = 'safeher_role_cache';
+
+const getCachedRole = (userId: string): UserRole | null => {
+  try {
+    const cached = sessionStorage.getItem(ROLE_CACHE_KEY);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (parsed.userId === userId && parsed.role) {
+        return parsed.role as UserRole;
+      }
+    }
+  } catch {}
+  return null;
+};
+
+const setCachedRole = (userId: string, role: UserRole | null) => {
+  try {
+    if (role) {
+      sessionStorage.setItem(ROLE_CACHE_KEY, JSON.stringify({ userId, role }));
+    } else {
+      sessionStorage.removeItem(ROLE_CACHE_KEY);
+    }
+  } catch {}
+};
+
 export const useUserRole = (): UseUserRoleReturn => {
   const { user } = useAuth();
-  const [role, setRoleState] = useState<UserRole | null>(null);
+  const [role, setRoleState] = useState<UserRole | null>(() => {
+    // Initialize from cache to prevent flash
+    if (user?.id) return getCachedRole(user.id);
+    return null;
+  });
   const [loading, setLoading] = useState(true);
 
   const fetchRole = useCallback(async () => {
@@ -23,8 +52,14 @@ export const useUserRole = (): UseUserRoleReturn => {
       return;
     }
 
+    // Check cache first
+    const cached = getCachedRole(user.id);
+    if (cached) {
+      setRoleState(cached);
+      setLoading(false);
+    }
+
     try {
-      // Query from the secure user_roles table
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
@@ -32,7 +67,9 @@ export const useUserRole = (): UseUserRoleReturn => {
         .maybeSingle();
 
       if (error) throw error;
-      setRoleState((data?.role as UserRole) || null);
+      const fetchedRole = (data?.role as UserRole) || null;
+      setRoleState(fetchedRole);
+      setCachedRole(user.id, fetchedRole);
     } catch (error) {
       console.error('Error fetching user role:', error);
       setRoleState(null);
@@ -49,7 +86,6 @@ export const useUserRole = (): UseUserRoleReturn => {
     if (!user) return false;
 
     try {
-      // Upsert into user_roles table
       const { error } = await supabase
         .from('user_roles')
         .upsert({ 
@@ -62,6 +98,7 @@ export const useUserRole = (): UseUserRoleReturn => {
 
       if (error) throw error;
       setRoleState(newRole);
+      setCachedRole(user.id, newRole);
       return true;
     } catch (error) {
       console.error('Error setting user role:', error);
