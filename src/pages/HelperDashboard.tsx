@@ -5,7 +5,6 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
-  Navigation,
   User,
   Loader2,
   Star,
@@ -217,14 +216,13 @@ const HelperDashboard = () => {
                   location={location}
                   activeRequests={activeRequests}
                   onNavigate={(lat, lng) => {
-                    // Scroll to request in list instead of opening external maps
                     const el = document.getElementById('requests');
                     el?.scrollIntoView({ behavior: 'smooth' });
                   }}
                 />
               </section>
 
-              {/* Pending Alerts */}
+              {/* Pending Alerts / Active Requests */}
               <section id="requests">
                 {pendingAlerts.length > 0 ? (
                   <Card className="border-destructive/50 shadow-card">
@@ -301,6 +299,43 @@ const HelperDashboard = () => {
                             </div>
                           );
                         })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : activeRequests.length > 0 ? (
+                  <Card className="border-warning/50 shadow-card">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="flex items-center gap-2 text-warning">
+                        <Bell className="w-5 h-5" />
+                        Active Requests Nearby ({activeRequests.length})
+                      </CardTitle>
+                      <CardDescription>
+                        Open support requests in the area
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {activeRequests.slice(0, 5).map((request) => (
+                          <div
+                            key={request.id}
+                            className="p-3 bg-warning/5 border border-warning/20 rounded-lg"
+                          >
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                              <Badge className={getUrgencyColor(request.urgency)}>
+                                {request.urgency.toUpperCase()}
+                              </Badge>
+                              <Badge variant="outline">{request.request_type}</Badge>
+                              <Badge variant="secondary">{request.status}</Badge>
+                            </div>
+                            {request.description && (
+                              <p className="text-sm text-muted-foreground mt-1">{request.description}</p>
+                            )}
+                            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                              <Clock className="w-3 h-3" />
+                              {formatDistanceToNow(new Date(request.created_at), { addSuffix: true })}
+                            </p>
+                          </div>
+                        ))}
                       </div>
                     </CardContent>
                   </Card>

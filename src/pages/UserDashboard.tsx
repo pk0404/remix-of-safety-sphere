@@ -113,24 +113,23 @@ const UserDashboard = () => {
             <p className="text-muted-foreground text-sm">Your personal safety command center</p>
           </div>
 
-          {/* SOS + Quick Actions Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <section id="sos" className="bg-card rounded-2xl border border-border p-4 sm:p-6 shadow-card">
-              <div className="text-center mb-4">
-                <h2 className="text-xl font-bold text-foreground mb-1">Emergency SOS</h2>
-                <p className="text-muted-foreground text-xs">
-                  Hold the button for 2 seconds to trigger alert
-                </p>
-              </div>
-              <div className="flex justify-center">
-                <SOSButton location={location} contacts={formattedContacts} />
-              </div>
-            </section>
+          {/* SOS Section - Full Width */}
+          <section id="sos" className="bg-card rounded-2xl border border-border p-4 sm:p-6 shadow-card mb-4">
+            <div className="text-center mb-4">
+              <h2 className="text-xl font-bold text-foreground mb-1">Emergency SOS</h2>
+              <p className="text-muted-foreground text-xs">
+                Hold the button for 2 seconds to trigger alert
+              </p>
+            </div>
+            <div className="flex justify-center">
+              <SOSButton location={location} contacts={formattedContacts} />
+            </div>
+          </section>
 
-            <section id="help">
-              <UserRequestHelpCard />
-            </section>
-          </div>
+          {/* Looking for Volunteers - directly under SOS */}
+          <section id="help" className="mb-4">
+            <UserRequestHelpCard />
+          </section>
 
           {/* Quick Actions */}
           <div className="mb-4">
@@ -195,13 +194,19 @@ const UserDashboard = () => {
               </section>
 
               {/* Nearby Places */}
-              <NearbyPlacesMap location={location} />
+              <section id="nearby">
+                <NearbyPlacesMap location={location} />
+              </section>
 
               {/* Emergency Numbers */}
-              <EmergencyNumbers />
+              <section id="numbers">
+                <EmergencyNumbers />
+              </section>
 
               {/* Safety Tips */}
-              <SafetyTips />
+              <section id="tips">
+                <SafetyTips />
+              </section>
             </div>
           </div>
         </main>

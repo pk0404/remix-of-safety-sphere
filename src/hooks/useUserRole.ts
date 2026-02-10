@@ -37,22 +37,25 @@ const setCachedRole = (userId: string, role: UserRole | null) => {
 };
 
 export const useUserRole = (): UseUserRoleReturn => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  
+  // Initialize from cache immediately to prevent flash
   const [role, setRoleState] = useState<UserRole | null>(() => {
-    // Initialize from cache to prevent flash
     if (user?.id) return getCachedRole(user.id);
     return null;
   });
   const [loading, setLoading] = useState(true);
+  const [fetched, setFetched] = useState(false);
 
   const fetchRole = useCallback(async () => {
     if (!user) {
-      setLoading(false);
       setRoleState(null);
+      setLoading(false);
+      setFetched(true);
       return;
     }
 
-    // Check cache first
+    // If we have a cached role, set loading false immediately
     const cached = getCachedRole(user.id);
     if (cached) {
       setRoleState(cached);
@@ -72,15 +75,19 @@ export const useUserRole = (): UseUserRoleReturn => {
       setCachedRole(user.id, fetchedRole);
     } catch (error) {
       console.error('Error fetching user role:', error);
-      setRoleState(null);
+      // Keep cached role if fetch fails
+      if (!cached) setRoleState(null);
     } finally {
       setLoading(false);
+      setFetched(true);
     }
   }, [user]);
 
   useEffect(() => {
-    fetchRole();
-  }, [fetchRole]);
+    if (!authLoading) {
+      fetchRole();
+    }
+  }, [fetchRole, authLoading]);
 
   const setRole = async (newRole: UserRole): Promise<boolean> => {
     if (!user) return false;
@@ -108,7 +115,7 @@ export const useUserRole = (): UseUserRoleReturn => {
 
   return {
     role,
-    loading,
+    loading: authLoading || loading,
     setRole,
     hasRole: role !== null,
   };
