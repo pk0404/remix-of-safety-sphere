@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Home,
@@ -12,7 +12,6 @@ import {
   LogOut,
   User,
   MapPin,
-  AlertTriangle,
   Mic,
   Navigation,
   CheckCircle2,
@@ -20,10 +19,11 @@ import {
   BarChart3,
   Heart,
   FileAudio,
+  AlertTriangle,
+  History,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
 import { cn } from '@/lib/utils';
@@ -33,20 +33,21 @@ interface NavItem {
   label: string;
   icon: React.ElementType;
   href: string;
-  badge?: string;
   section?: string;
 }
 
 // User-specific navigation items
 const userNavItems: NavItem[] = [
   { label: 'Dashboard', icon: Home, href: '/', section: 'main' },
-  { label: 'Audio Library', icon: FileAudio, href: '/audio-library', section: 'main' },
   { label: 'Safety Map', icon: Map, href: '/#map', section: 'safety' },
   { label: 'Live Location', icon: MapPin, href: '/#location', section: 'safety' },
   { label: 'Audio Recorder', icon: Mic, href: '/#record', section: 'safety' },
+  { label: 'Audio Library', icon: FileAudio, href: '/audio-library', section: 'safety' },
   { label: 'Journey Tracker', icon: Navigation, href: '/#journey', section: 'safety' },
-  { label: 'Check-In', icon: CheckCircle2, href: '/#checkin', section: 'safety' },
+  { label: 'Safety Check-In', icon: CheckCircle2, href: '/#checkin', section: 'safety' },
   { label: 'Emergency Contacts', icon: Phone, href: '/#contacts', section: 'safety' },
+  { label: 'Nearby Places', icon: MapPin, href: '/#nearby', section: 'safety' },
+  { label: 'Emergency Numbers', icon: Phone, href: '/#numbers', section: 'safety' },
   { label: 'Analytics', icon: BarChart3, href: '/#analytics', section: 'insights' },
   { label: 'Notifications', icon: Bell, href: '/notifications', section: 'account' },
   { label: 'Settings', icon: Settings, href: '/settings', section: 'account' },
@@ -151,7 +152,6 @@ const SlidingSidebar = () => {
       </SheetTrigger>
       
       <SheetContent side="left" className="w-72 p-0 flex flex-col">
-        {/* Header */}
         <SheetHeader className="p-4 border-b border-border">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center relative">
@@ -167,14 +167,10 @@ const SlidingSidebar = () => {
           </div>
         </SheetHeader>
 
-        {/* Navigation */}
         <ScrollArea className="flex-1 p-4">
           <div className="space-y-6">
-            {/* Main */}
             <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-3">
-                Main
-              </p>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-3">Main</p>
               <nav className="space-y-1">
                 {getSectionItems('main').map((item) => (
                   <NavLinkItem key={item.href + item.label} item={item} />
@@ -182,12 +178,9 @@ const SlidingSidebar = () => {
               </nav>
             </div>
 
-            {/* Safety Features (User only) */}
-            {role !== 'helper' && getSectionItems('safety').length > 0 && (
+            {getSectionItems('safety').length > 0 && (
               <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-3">
-                  Safety Features
-                </p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-3">Safety Features</p>
                 <nav className="space-y-1">
                   {getSectionItems('safety').map((item) => (
                     <NavLinkItem key={item.href + item.label} item={item} />
@@ -196,12 +189,9 @@ const SlidingSidebar = () => {
               </div>
             )}
 
-            {/* Insights (User only) */}
             {getSectionItems('insights').length > 0 && (
               <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-3">
-                  Insights
-                </p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-3">Insights</p>
                 <nav className="space-y-1">
                   {getSectionItems('insights').map((item) => (
                     <NavLinkItem key={item.href + item.label} item={item} />
@@ -210,11 +200,8 @@ const SlidingSidebar = () => {
               </div>
             )}
 
-            {/* Account */}
             <div>
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-3">
-                Account
-              </p>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-3">Account</p>
               <nav className="space-y-1">
                 {getSectionItems('account').map((item) => (
                   <NavLinkItem key={item.href + item.label} item={item} />
@@ -224,7 +211,6 @@ const SlidingSidebar = () => {
           </div>
         </ScrollArea>
 
-        {/* User Section */}
         <div className="p-4 border-t border-border mt-auto">
           {user ? (
             <div className="space-y-3">
@@ -234,17 +220,11 @@ const SlidingSidebar = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{user.email}</p>
-                  <p className="text-xs text-muted-foreground capitalize">
-                    {role || 'user'} account
-                  </p>
+                  <p className="text-xs text-muted-foreground capitalize">{role || 'user'} account</p>
                 </div>
               </div>
               <SheetClose asChild>
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => signOut()}
-                >
+                <Button variant="outline" className="w-full" onClick={() => signOut()}>
                   <LogOut className="w-4 h-4 mr-2" />
                   Sign Out
                 </Button>
