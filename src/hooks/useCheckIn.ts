@@ -1,20 +1,3 @@
-/**
- * useCheckIn Hook
- * ================
- * Manages the "proof of life" attendance check-in system.
- * 
- * Features:
- * - Periodic check-in reminders
- * - Missed check-in detection
- * - Emergency escalation when check-ins are missed
- * - Integration with emergency contacts
- * 
- * Developer Notes:
- * - Check-in intervals are configurable in user settings
- * - Missed check-ins trigger AI analysis before escalation
- * - Multiple escalation levels: reminder -> warning -> alert -> emergency call
- */
-
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -55,25 +38,17 @@ interface UseCheckInReturn {
   performCheckIn: (location?: Location, notes?: string) => Promise<void>;
   stopCheckInSession: () => void;
   updateSettings: (settings: Partial<CheckInSettings>) => void;
-  timeUntilNextCheckIn: number | null; // in seconds
+  timeUntilNextCheckIn: number | null;
+  selectedContacts: string[];
+  setSelectedContacts: (contacts: string[]) => void;
 }
 
-// Escalation levels for missed check-ins
-const ESCALATION_LEVELS = {
-  REMINDER: 1,    // First missed - gentle reminder
-  WARNING: 2,     // Second missed - urgent warning (grace period)
-  ALERT: 3,       // Third missed - alert contacts via email
-  EMERGENCY: 4,   // Fourth missed - trigger emergency call
-} as const;
-
-// Grace period in minutes after missed check-in
 const GRACE_PERIOD_MINUTES = 2;
 
 export const useCheckIn = (location?: Location | null): UseCheckInReturn => {
   const { user } = useAuth();
   const { contacts } = useEmergencyContacts();
 
-  // State
   const [isActive, setIsActive] = useState(false);
   const [nextCheckInDue, setNextCheckInDue] = useState<Date | null>(null);
   const [missedCount, setMissedCount] = useState(0);
@@ -81,19 +56,23 @@ export const useCheckIn = (location?: Location | null): UseCheckInReturn => {
   const [checkInHistory, setCheckInHistory] = useState<CheckIn[]>([]);
   const [loading, setLoading] = useState(false);
   const [timeUntilNextCheckIn, setTimeUntilNextCheckIn] = useState<number | null>(null);
+  const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
   const [settings, setSettings] = useState<CheckInSettings>({
     enabled: false,
     intervalMinutes: 30,
     alertOnMiss: true,
   });
 
-  // Refs for intervals
   const checkIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  /**
-   * Fetch user's check-in history from database
-   */
+  // Auto-select all contacts by default
+  useEffect(() => {
+    if (contacts.length > 0 && selectedContacts.length === 0) {
+      setSelectedContacts(contacts.map(c => c.id));
+    }
+  }, [contacts]);
+
   const fetchCheckInHistory = useCallback(async () => {
     if (!user) return;
 
@@ -107,7 +86,6 @@ export const useCheckIn = (location?: Location | null): UseCheckInReturn => {
 
       if (error) throw error;
 
-      // Type-safe mapping
       const typedData: CheckIn[] = (data || []).map((item) => ({
         id: item.id,
         user_id: item.user_id,
@@ -133,13 +111,13 @@ export const useCheckIn = (location?: Location | null): UseCheckInReturn => {
   }, [fetchCheckInHistory]);
 
   /**
-   * Send emergency email to contacts via edge function
+   * Send emergency email to selected contacts
    */
   const sendEmergencyEmail = useCallback(async () => {
     if (!user || !location) return;
 
     try {
-      console.log('[CheckIn] Sending emergency email...');
+      console.log('[CheckIn] Sending emergency email to contacts...');
       
       const { data, error } = await supabase.functions.invoke('send-emergency-email', {
         body: {
@@ -148,6 +126,7 @@ export const useCheckIn = (location?: Location | null): UseCheckInReturn => {
           longitude: location.longitude,
           missed_count: missedCount,
           last_check_in: lastCheckIn?.checked_in_at,
+          selected_contact_ids: selectedContacts.length > 0 ? selectedContacts : undefined,
         },
       });
 
@@ -160,70 +139,25 @@ export const useCheckIn = (location?: Location | null): UseCheckInReturn => {
       });
     } catch (error) {
       console.error('[CheckIn] Error sending emergency email:', error);
-      toast.error('Failed to send emergency email');
+      toast.error('Failed to send emergency email - please call for help manually');
     }
-  }, [user, location, missedCount, lastCheckIn]);
+  }, [user, location, missedCount, lastCheckIn, selectedContacts]);
 
   /**
-   * Escalate missed check-in based on miss count
+   * Send live location to police (escalation level 3)
    */
-  const handleMissedCheckIn = useCallback(async () => {
-    const newMissedCount = missedCount + 1;
-    setMissedCount(newMissedCount);
+  const triggerPoliceAlert = useCallback(() => {
+    // Initiate call to police
+    toast.error('🚨 EMERGENCY: Contacting Police with your live location!', {
+      description: 'Calling emergency services (100)...',
+      duration: 30000,
+    });
 
-    console.log(`[CheckIn] Missed check-in #${newMissedCount}`);
-
-    // Record missed check-in in database
-    if (user) {
-      await supabase.from('check_ins').insert({
-        user_id: user.id,
-        status: 'missed',
-        location_lat: location?.latitude,
-        location_lng: location?.longitude,
-      });
-
-      // Record analytics
-      await supabase.from('safety_analytics').insert({
-        user_id: user.id,
-        metric_type: 'check_in_missed',
-        metadata: { miss_count: newMissedCount },
-      });
-    }
-
-    // Escalation logic
-    switch (newMissedCount) {
-      case ESCALATION_LEVELS.REMINDER:
-        toast.warning('⏰ Check-in reminder!', {
-          description: `Please confirm you are safe. You have ${GRACE_PERIOD_MINUTES} minutes to check in.`,
-          duration: 30000,
-        });
-        break;
-
-      case ESCALATION_LEVELS.WARNING:
-        toast.error('⚠️ Urgent: Check-in overdue!', {
-          description: 'Grace period ending soon. Please check in immediately.',
-          duration: 60000,
-        });
-        break;
-
-      case ESCALATION_LEVELS.ALERT:
-        toast.error('🚨 Alert: Notifying emergency contacts!', {
-          description: 'Sending email with your location to emergency contacts',
-          duration: 60000,
-        });
-        // Send emergency email to contacts
-        await sendEmergencyEmail();
-        break;
-
-      case ESCALATION_LEVELS.EMERGENCY:
-        toast.error('🆘 EMERGENCY: Initiating emergency protocol', {
-          description: 'Contacting emergency services and contacts',
-          duration: 120000,
-        });
-        triggerEmergencyCall();
-        break;
-    }
-  }, [missedCount, user, location, sendEmergencyEmail]);
+    // Open phone dialer to police
+    setTimeout(() => {
+      window.location.href = 'tel:100';
+    }, 1500);
+  }, []);
 
   /**
    * Trigger emergency call to primary contact
@@ -232,7 +166,6 @@ export const useCheckIn = (location?: Location | null): UseCheckInReturn => {
     const primaryContact = contacts.find((c) => c.is_primary) || contacts[0];
 
     if (primaryContact?.phone) {
-      // Update check-in status to 'alerted'
       if (lastCheckIn && user) {
         supabase
           .from('check_ins')
@@ -240,18 +173,66 @@ export const useCheckIn = (location?: Location | null): UseCheckInReturn => {
           .eq('id', lastCheckIn.id);
       }
 
-      // Initiate phone call
       window.location.href = `tel:${primaryContact.phone}`;
       
       toast.error('📞 Emergency call initiated', {
         description: `Calling ${primaryContact.name}`,
       });
     } else {
-      toast.error('No emergency contact available', {
-        description: 'Please add an emergency contact',
-      });
+      // No contact available, call police directly
+      window.location.href = 'tel:100';
     }
   }, [contacts, lastCheckIn, user]);
+
+  /**
+   * Escalate missed check-in based on miss count
+   * Level 1: Reminder toast
+   * Level 2: Send emergency email to contacts
+   * Level 3: Send live location to police + trigger call
+   */
+  const handleMissedCheckIn = useCallback(async () => {
+    const newMissedCount = missedCount + 1;
+    setMissedCount(newMissedCount);
+
+    console.log(`[CheckIn] Missed check-in #${newMissedCount}`);
+
+    if (user) {
+      await supabase.from('check_ins').insert({
+        user_id: user.id,
+        status: 'missed',
+        location_lat: location?.latitude,
+        location_lng: location?.longitude,
+      });
+
+      await supabase.from('safety_analytics').insert({
+        user_id: user.id,
+        metric_type: 'check_in_missed',
+        metadata: { miss_count: newMissedCount },
+      });
+    }
+
+    // Escalation logic
+    if (newMissedCount === 1) {
+      toast.warning('⏰ Check-in reminder!', {
+        description: `Are you okay? Please confirm you are safe. You have ${GRACE_PERIOD_MINUTES} minutes.`,
+        duration: 30000,
+      });
+    } else if (newMissedCount === 2) {
+      toast.error('⚠️ Urgent: Sending emergency email to your contacts!', {
+        description: 'Your emergency contacts are being notified with your location.',
+        duration: 60000,
+      });
+      await sendEmergencyEmail();
+    } else if (newMissedCount >= 3) {
+      toast.error('🚨 CRITICAL: Alerting police with your live location!', {
+        description: 'Emergency services and all contacts are being notified.',
+        duration: 120000,
+      });
+      // Send email again + trigger police
+      await sendEmergencyEmail();
+      triggerPoliceAlert();
+    }
+  }, [missedCount, user, location, sendEmergencyEmail, triggerPoliceAlert]);
 
   /**
    * Update countdown timer
@@ -269,7 +250,6 @@ export const useCheckIn = (location?: Location | null): UseCheckInReturn => {
 
       if (diff === 0 && isActive) {
         handleMissedCheckIn();
-        // Set next check-in due
         const nextDue = new Date(Date.now() + settings.intervalMinutes * 60 * 1000);
         setNextCheckInDue(nextDue);
       }
@@ -285,9 +265,6 @@ export const useCheckIn = (location?: Location | null): UseCheckInReturn => {
     };
   }, [nextCheckInDue, isActive, settings.intervalMinutes, handleMissedCheckIn]);
 
-  /**
-   * Start a check-in session with specified interval
-   */
   const startCheckInSession = useCallback(async (intervalMinutes = 30) => {
     if (!user) {
       toast.error('Please sign in to use check-in feature');
@@ -298,7 +275,6 @@ export const useCheckIn = (location?: Location | null): UseCheckInReturn => {
     try {
       const nextDue = new Date(Date.now() + intervalMinutes * 60 * 1000);
 
-      // Create initial check-in record
       const { data, error } = await supabase
         .from('check_ins')
         .insert({
@@ -321,21 +297,16 @@ export const useCheckIn = (location?: Location | null): UseCheckInReturn => {
       setSettings((prev) => ({ ...prev, intervalMinutes, enabled: true }));
 
       toast.success('✅ Check-in session started', {
-        description: `You'll be reminded every ${intervalMinutes} minutes`,
+        description: `You'll be reminded every ${intervalMinutes} minutes. ${selectedContacts.length} contacts will be notified on escalation.`,
       });
-
-      console.log('[CheckIn] Session started with interval:', intervalMinutes);
     } catch (error) {
       console.error('[CheckIn] Error starting session:', error);
       toast.error('Failed to start check-in session');
     } finally {
       setLoading(false);
     }
-  }, [user, location]);
+  }, [user, location, selectedContacts.length]);
 
-  /**
-   * Perform a check-in (user confirms they are safe)
-   */
   const performCheckIn = useCallback(async (loc?: Location, notes?: string) => {
     if (!user || !isActive) return;
 
@@ -359,52 +330,45 @@ export const useCheckIn = (location?: Location | null): UseCheckInReturn => {
 
       if (error) throw error;
 
-      setMissedCount(0); // Reset missed count on successful check-in
+      const wasMissed = missedCount > 0;
+      setMissedCount(0);
       setNextCheckInDue(nextDue);
       setLastCheckIn(data as CheckIn);
       await fetchCheckInHistory();
 
-      toast.success('✅ Check-in successful!', {
-        description: `Next check-in in ${settings.intervalMinutes} minutes`,
-      });
-
-      console.log('[CheckIn] Check-in performed successfully');
+      if (wasMissed) {
+        toast.success('🎉 Great to hear you\'re safe!', {
+          description: `We were worried about you. Next check-in in ${settings.intervalMinutes} minutes.`,
+        });
+      } else {
+        toast.success('✅ Check-in successful!', {
+          description: `Next check-in in ${settings.intervalMinutes} minutes`,
+        });
+      }
     } catch (error) {
       console.error('[CheckIn] Error performing check-in:', error);
       toast.error('Failed to record check-in');
     } finally {
       setLoading(false);
     }
-  }, [user, isActive, settings.intervalMinutes, location, fetchCheckInHistory]);
+  }, [user, isActive, settings.intervalMinutes, location, fetchCheckInHistory, missedCount]);
 
-  /**
-   * Stop the check-in session
-   */
   const stopCheckInSession = useCallback(() => {
     setIsActive(false);
     setNextCheckInDue(null);
     setMissedCount(0);
     setTimeUntilNextCheckIn(null);
 
-    if (checkIntervalRef.current) {
-      clearInterval(checkIntervalRef.current);
-    }
-    if (countdownIntervalRef.current) {
-      clearInterval(countdownIntervalRef.current);
-    }
+    if (checkIntervalRef.current) clearInterval(checkIntervalRef.current);
+    if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
 
     toast.info('Check-in session ended');
-    console.log('[CheckIn] Session stopped');
   }, []);
 
-  /**
-   * Update check-in settings
-   */
   const updateSettings = useCallback((newSettings: Partial<CheckInSettings>) => {
     setSettings((prev) => ({ ...prev, ...newSettings }));
   }, []);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (checkIntervalRef.current) clearInterval(checkIntervalRef.current);
@@ -425,6 +389,8 @@ export const useCheckIn = (location?: Location | null): UseCheckInReturn => {
     stopCheckInSession,
     updateSettings,
     timeUntilNextCheckIn,
+    selectedContacts,
+    setSelectedContacts,
   };
 };
 

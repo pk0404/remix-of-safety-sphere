@@ -10,11 +10,16 @@ import {
   Star,
   TrendingUp,
   Shield,
+  History,
+  DollarSign,
+  Award,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useVolunteers, VolunteerAlert } from '@/hooks/useVolunteers';
 import { useHelpSession } from '@/hooks/useHelpSession';
 import useGeolocation from '@/hooks/useGeolocation';
@@ -25,6 +30,7 @@ import VolunteerRegistration from '@/components/volunteer/VolunteerRegistration'
 import VolunteerRewards from '@/components/volunteer/VolunteerRewards';
 import HelperMapView from '@/components/volunteer/HelperMapView';
 import HelperNavigationView from '@/components/volunteer/HelperNavigationView';
+import HelperSessionHistory from '@/components/volunteer/HelperSessionHistory';
 import { formatDistanceToNow } from 'date-fns';
 
 const HelperDashboard = () => {
@@ -45,7 +51,6 @@ const HelperDashboard = () => {
   const [updatingLocation, setUpdatingLocation] = useState(false);
   const [acceptingAlert, setAcceptingAlert] = useState<string | null>(null);
 
-  // Update location periodically when available
   useEffect(() => {
     if (location && volunteer?.is_available) {
       updateVolunteerLocation(location.latitude, location.longitude);
@@ -94,7 +99,6 @@ const HelperDashboard = () => {
     );
   }
 
-  // Show registration if not a volunteer
   if (!isVolunteer) {
     return (
       <div className="min-h-screen bg-background">
@@ -115,7 +119,6 @@ const HelperDashboard = () => {
     );
   }
 
-  // Show full-screen navigation view when there's an active session
   if (activeSession) {
     return (
       <GoogleMapsProvider>
@@ -160,7 +163,6 @@ const HelperDashboard = () => {
                 />
               </div>
 
-              {/* Quick Stats */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="text-center p-3 bg-muted/50 rounded-lg">
                   <p className="text-lg font-bold">{volunteer?.total_responses || 0}</p>
@@ -207,10 +209,10 @@ const HelperDashboard = () => {
           </Card>
 
           {/* Two column layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Left Column - Map & Requests */}
             <div className="space-y-4">
-              {/* Map View with Nearby Requests */}
+              {/* Map View */}
               <section id="map">
                 <HelperMapView 
                   location={location}
@@ -231,9 +233,7 @@ const HelperDashboard = () => {
                         <Bell className="w-5 h-5 animate-pulse" />
                         Help Requests ({pendingAlerts.length})
                       </CardTitle>
-                      <CardDescription>
-                        People nearby need assistance
-                      </CardDescription>
+                      <CardDescription>People nearby need assistance</CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
@@ -242,10 +242,7 @@ const HelperDashboard = () => {
                           if (!request) return null;
 
                           return (
-                            <div
-                              key={alert.id}
-                              className="p-4 bg-destructive/5 border border-destructive/20 rounded-xl"
-                            >
+                            <div key={alert.id} className="p-4 bg-destructive/5 border border-destructive/20 rounded-xl">
                               <div className="flex items-start justify-between gap-3 mb-3">
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -261,9 +258,7 @@ const HelperDashboard = () => {
                                     <p className="text-sm mb-2">{request.description}</p>
                                   )}
                                   {request.requester_name && (
-                                    <p className="text-xs text-muted-foreground">
-                                      From: {request.requester_name}
-                                    </p>
+                                    <p className="text-xs text-muted-foreground">From: {request.requester_name}</p>
                                   )}
                                   <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
                                     <Clock className="w-3 h-3" />
@@ -309,17 +304,12 @@ const HelperDashboard = () => {
                         <Bell className="w-5 h-5" />
                         Active Requests Nearby ({activeRequests.length})
                       </CardTitle>
-                      <CardDescription>
-                        Open support requests in the area
-                      </CardDescription>
+                      <CardDescription>Open support requests in the area</CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
                         {activeRequests.slice(0, 5).map((request) => (
-                          <div
-                            key={request.id}
-                            className="p-3 bg-warning/5 border border-warning/20 rounded-lg"
-                          >
+                          <div key={request.id} className="p-3 bg-warning/5 border border-warning/20 rounded-lg">
                             <div className="flex items-center gap-2 mb-1 flex-wrap">
                               <Badge className={getUrgencyColor(request.urgency)}>
                                 {request.urgency.toUpperCase()}
@@ -351,9 +341,14 @@ const HelperDashboard = () => {
                   </Card>
                 )}
               </section>
+
+              {/* Session History */}
+              <section id="history">
+                <HelperSessionHistory />
+              </section>
             </div>
 
-            {/* Right Column - Rewards */}
+            {/* Right Column - Rewards & Earnings */}
             <div className="space-y-4">
               <section id="rewards">
                 <VolunteerRewards />
