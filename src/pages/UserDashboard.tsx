@@ -137,7 +137,7 @@ const UserDashboard = () => {
           </div>
 
           {/* Two column layout for desktop */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             
             {/* Left Column */}
             <div className="space-y-4">
@@ -151,6 +151,11 @@ const UserDashboard = () => {
                 />
               </section>
 
+              {/* Safety Check-In */}
+              <section id="checkin">
+                <CheckInSystem location={location} />
+              </section>
+
               {/* Audio Recorder with Evidence Viewer */}
               <section id="record" className="space-y-4">
                 <AudioRecorderComponent location={location} contacts={formattedContacts} />
@@ -160,11 +165,6 @@ const UserDashboard = () => {
               {/* Journey Tracker */}
               <section id="journey">
                 <JourneyTracker location={location} contacts={formattedContacts} />
-              </section>
-
-              {/* Check-In System */}
-              <section id="checkin">
-                <CheckInSystem location={location} />
               </section>
 
               {/* Emergency Contacts */}

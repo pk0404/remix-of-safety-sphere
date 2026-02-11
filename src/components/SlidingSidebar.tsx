@@ -21,6 +21,7 @@ import {
   FileAudio,
   AlertTriangle,
   History,
+  Clock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -36,15 +37,14 @@ interface NavItem {
   section?: string;
 }
 
-// User-specific navigation items
 const userNavItems: NavItem[] = [
   { label: 'Dashboard', icon: Home, href: '/', section: 'main' },
   { label: 'Safety Map', icon: Map, href: '/#map', section: 'safety' },
   { label: 'Live Location', icon: MapPin, href: '/#location', section: 'safety' },
+  { label: 'Safety Check-In', icon: CheckCircle2, href: '/#checkin', section: 'safety' },
   { label: 'Audio Recorder', icon: Mic, href: '/#record', section: 'safety' },
   { label: 'Audio Library', icon: FileAudio, href: '/audio-library', section: 'safety' },
   { label: 'Journey Tracker', icon: Navigation, href: '/#journey', section: 'safety' },
-  { label: 'Safety Check-In', icon: CheckCircle2, href: '/#checkin', section: 'safety' },
   { label: 'Emergency Contacts', icon: Phone, href: '/#contacts', section: 'safety' },
   { label: 'Nearby Places', icon: MapPin, href: '/#nearby', section: 'safety' },
   { label: 'Emergency Numbers', icon: Phone, href: '/#numbers', section: 'safety' },
@@ -53,12 +53,12 @@ const userNavItems: NavItem[] = [
   { label: 'Settings', icon: Settings, href: '/settings', section: 'account' },
 ];
 
-// Helper-ONLY navigation items
 const helperNavItems: NavItem[] = [
   { label: 'Dashboard', icon: Home, href: '/', section: 'main' },
   { label: 'Requests Map', icon: Map, href: '/#map', section: 'main' },
   { label: 'Active Requests', icon: AlertTriangle, href: '/#requests', section: 'main' },
   { label: 'My Rewards', icon: Award, href: '/#rewards', section: 'main' },
+  { label: 'Session History', icon: History, href: '/#history', section: 'main' },
   { label: 'Notifications', icon: Bell, href: '/notifications', section: 'account' },
   { label: 'Settings', icon: Settings, href: '/settings', section: 'account' },
 ];
