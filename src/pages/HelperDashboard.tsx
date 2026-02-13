@@ -31,6 +31,8 @@ import VolunteerRewards from '@/components/volunteer/VolunteerRewards';
 import HelperMapView from '@/components/volunteer/HelperMapView';
 import HelperNavigationView from '@/components/volunteer/HelperNavigationView';
 import HelperSessionHistory from '@/components/volunteer/HelperSessionHistory';
+import VolunteerLeaderboard from '@/components/volunteer/VolunteerLeaderboard';
+import HelperSettings from '@/components/volunteer/HelperSettings';
 import { formatDistanceToNow } from 'date-fns';
 
 const HelperDashboard = () => {
@@ -348,10 +350,16 @@ const HelperDashboard = () => {
               </section>
             </div>
 
-            {/* Right Column - Rewards & Earnings */}
+            {/* Right Column - Rewards, Leaderboard & Settings */}
             <div className="space-y-4">
               <section id="rewards">
                 <VolunteerRewards />
+              </section>
+              <section id="leaderboard">
+                <VolunteerLeaderboard />
+              </section>
+              <section id="settings">
+                <HelperSettings />
               </section>
             </div>
           </div>
