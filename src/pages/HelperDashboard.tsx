@@ -1,25 +1,12 @@
 import { useState, useEffect } from 'react';
 import {
-  Bell,
-  MapPin,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  User,
-  Loader2,
-  Star,
-  TrendingUp,
-  Shield,
-  History,
-  DollarSign,
-  Award,
+  Bell, MapPin, Clock, CheckCircle2, XCircle, User, Loader2, Star,
+  TrendingUp, Shield, DollarSign, Award,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { useVolunteers, VolunteerAlert } from '@/hooks/useVolunteers';
 import { useHelpSession } from '@/hooks/useHelpSession';
 import useGeolocation from '@/hooks/useGeolocation';
@@ -28,25 +15,18 @@ import SlidingSidebar from '@/components/SlidingSidebar';
 import OfflineIndicator from '@/components/OfflineIndicator';
 import VolunteerRegistration from '@/components/volunteer/VolunteerRegistration';
 import VolunteerRewards from '@/components/volunteer/VolunteerRewards';
-import HelperMapView from '@/components/volunteer/HelperMapView';
 import HelperNavigationView from '@/components/volunteer/HelperNavigationView';
 import HelperSessionHistory from '@/components/volunteer/HelperSessionHistory';
 import VolunteerLeaderboard from '@/components/volunteer/VolunteerLeaderboard';
 import HelperSettings from '@/components/volunteer/HelperSettings';
+import LiveTrackingMap from '@/components/tracking/LiveTrackingMap';
 import { formatDistanceToNow } from 'date-fns';
 
 const HelperDashboard = () => {
   const { location } = useGeolocation();
   const {
-    volunteer,
-    isVolunteer,
-    loading,
-    alerts,
-    activeRequests,
-    updateVolunteerLocation,
-    toggleAvailability,
-    respondToAlert,
-    refreshData,
+    volunteer, isVolunteer, loading, alerts, activeRequests,
+    updateVolunteerLocation, toggleAvailability, respondToAlert, refreshData,
   } = useVolunteers();
   
   const { createSession, activeSession } = useHelpSession();
@@ -69,17 +49,11 @@ const HelperDashboard = () => {
   const handleAcceptRequest = async (alert: VolunteerAlert) => {
     const request = alert.support_request;
     if (!request || !volunteer) return;
-
     setAcceptingAlert(alert.id);
     await respondToAlert(alert.id, 'accepted');
     await createSession(
-      request.id,
-      volunteer.id,
-      request.requester_id,
-      location?.latitude,
-      location?.longitude,
-      request.latitude,
-      request.longitude
+      request.id, volunteer.id, request.requester_id,
+      location?.latitude, location?.longitude, request.latitude, request.longitude
     );
     setAcceptingAlert(null);
   };
@@ -111,9 +85,7 @@ const HelperDashboard = () => {
               <Shield className="w-8 h-8 text-primary" />
             </div>
             <h1 className="text-2xl font-bold mb-2">Become a Community Helper</h1>
-            <p className="text-muted-foreground">
-              Register to receive alerts and help people in your community
-            </p>
+            <p className="text-muted-foreground">Register to receive alerts and help people in your community</p>
           </div>
           <VolunteerRegistration />
         </div>
@@ -132,13 +104,20 @@ const HelperDashboard = () => {
 
   const pendingAlerts = alerts.filter(a => a.status === 'sent');
 
+  // Build map targets from active requests
+  const mapTargets = activeRequests.map(req => ({
+    id: req.id,
+    label: `${req.request_type} - ${req.urgency}`,
+    location: { latitude: req.latitude, longitude: req.longitude },
+    type: 'user' as const,
+  }));
+
   return (
     <GoogleMapsProvider>
       <div className="min-h-screen bg-background">
         <SlidingSidebar />
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 pt-16">
-          {/* Page Header */}
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-foreground">Helper Dashboard</h1>
             <p className="text-muted-foreground text-sm">Respond to help requests in your area</p>
@@ -159,10 +138,7 @@ const HelperDashboard = () => {
                     </p>
                   </div>
                 </div>
-                <Switch
-                  checked={volunteer?.is_available}
-                  onCheckedChange={toggleAvailability}
-                />
+                <Switch checked={volunteer?.is_available} onCheckedChange={toggleAvailability} />
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -188,23 +164,12 @@ const HelperDashboard = () => {
               </div>
 
               <div className="flex gap-2 mt-4">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleLocationUpdate}
-                  disabled={updatingLocation || !location}
-                  className="flex-1"
-                >
-                  {updatingLocation ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <MapPin className="w-4 h-4 mr-1" />
-                  )}
+                <Button variant="outline" size="sm" onClick={handleLocationUpdate} disabled={updatingLocation || !location} className="flex-1">
+                  {updatingLocation ? <Loader2 className="w-4 h-4 animate-spin" /> : <MapPin className="w-4 h-4 mr-1" />}
                   Update Location
                 </Button>
                 <Button variant="outline" size="sm" onClick={refreshData} className="flex-1">
-                  <TrendingUp className="w-4 h-4 mr-1" />
-                  Refresh
+                  <TrendingUp className="w-4 h-4 mr-1" /> Refresh
                 </Button>
               </div>
             </CardContent>
@@ -212,21 +177,19 @@ const HelperDashboard = () => {
 
           {/* Two column layout */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Left Column - Map & Requests */}
             <div className="space-y-4">
-              {/* Map View */}
+              {/* Integrated Tracking Map */}
               <section id="map">
-                <HelperMapView 
-                  location={location}
-                  activeRequests={activeRequests}
-                  onNavigate={(lat, lng) => {
-                    const el = document.getElementById('requests');
-                    el?.scrollIntoView({ behavior: 'smooth' });
-                  }}
+                <LiveTrackingMap
+                  myLocation={location}
+                  targets={mapTargets}
+                  title="Nearby Requests Map"
+                  height="350px"
+                  showDistance={mapTargets.length > 0}
                 />
               </section>
 
-              {/* Pending Alerts / Active Requests */}
+              {/* Pending Alerts */}
               <section id="requests">
                 {pendingAlerts.length > 0 ? (
                   <Card className="border-destructive/50 shadow-card">
@@ -242,54 +205,28 @@ const HelperDashboard = () => {
                         {pendingAlerts.map((alert) => {
                           const request = alert.support_request;
                           if (!request) return null;
-
                           return (
                             <div key={alert.id} className="p-4 bg-destructive/5 border border-destructive/20 rounded-xl">
                               <div className="flex items-start justify-between gap-3 mb-3">
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2 mb-2 flex-wrap">
-                                    <Badge className={getUrgencyColor(request.urgency)}>
-                                      {request.urgency.toUpperCase()}
-                                    </Badge>
+                                    <Badge className={getUrgencyColor(request.urgency)}>{request.urgency.toUpperCase()}</Badge>
                                     <Badge variant="outline">{request.request_type}</Badge>
-                                    {alert.distance_km && (
-                                      <Badge variant="secondary">{alert.distance_km} km</Badge>
-                                    )}
+                                    {alert.distance_km && <Badge variant="secondary">{alert.distance_km} km</Badge>}
                                   </div>
-                                  {request.description && (
-                                    <p className="text-sm mb-2">{request.description}</p>
-                                  )}
-                                  {request.requester_name && (
-                                    <p className="text-xs text-muted-foreground">From: {request.requester_name}</p>
-                                  )}
+                                  {request.description && <p className="text-sm mb-2">{request.description}</p>}
+                                  {request.requester_name && <p className="text-xs text-muted-foreground">From: {request.requester_name}</p>}
                                   <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
                                     <Clock className="w-3 h-3" />
                                     {formatDistanceToNow(new Date(request.created_at), { addSuffix: true })}
                                   </p>
                                 </div>
                               </div>
-
                               <div className="flex gap-2">
-                                <Button
-                                  size="sm"
-                                  className="flex-1"
-                                  disabled={acceptingAlert === alert.id}
-                                  onClick={() => handleAcceptRequest(alert)}
-                                >
-                                  {acceptingAlert === alert.id ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                  ) : (
-                                    <>
-                                      <CheckCircle2 className="w-4 h-4 mr-1" />
-                                      Accept & Navigate
-                                    </>
-                                  )}
+                                <Button size="sm" className="flex-1" disabled={acceptingAlert === alert.id} onClick={() => handleAcceptRequest(alert)}>
+                                  {acceptingAlert === alert.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <><CheckCircle2 className="w-4 h-4 mr-1" /> Accept & Navigate</>}
                                 </Button>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => respondToAlert(alert.id, 'declined')}
-                                >
+                                <Button size="sm" variant="ghost" onClick={() => respondToAlert(alert.id, 'declined')}>
                                   <XCircle className="w-4 h-4" />
                                 </Button>
                               </div>
@@ -299,58 +236,22 @@ const HelperDashboard = () => {
                       </div>
                     </CardContent>
                   </Card>
-                ) : activeRequests.length > 0 ? (
-                  <Card className="border-warning/50 shadow-card">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="flex items-center gap-2 text-warning">
-                        <Bell className="w-5 h-5" />
-                        Active Requests Nearby ({activeRequests.length})
-                      </CardTitle>
-                      <CardDescription>Open support requests in the area</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        {activeRequests.slice(0, 5).map((request) => (
-                          <div key={request.id} className="p-3 bg-warning/5 border border-warning/20 rounded-lg">
-                            <div className="flex items-center gap-2 mb-1 flex-wrap">
-                              <Badge className={getUrgencyColor(request.urgency)}>
-                                {request.urgency.toUpperCase()}
-                              </Badge>
-                              <Badge variant="outline">{request.request_type}</Badge>
-                              <Badge variant="secondary">{request.status}</Badge>
-                            </div>
-                            {request.description && (
-                              <p className="text-sm text-muted-foreground mt-1">{request.description}</p>
-                            )}
-                            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                              <Clock className="w-3 h-3" />
-                              {formatDistanceToNow(new Date(request.created_at), { addSuffix: true })}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
                 ) : (
                   <Card>
                     <CardContent className="py-8 text-center">
                       <CheckCircle2 className="w-12 h-12 mx-auto mb-4 text-success opacity-50" />
                       <h3 className="font-semibold mb-1">All Clear!</h3>
-                      <p className="text-sm text-muted-foreground">
-                        No pending help requests in your area. Stay online to receive alerts.
-                      </p>
+                      <p className="text-sm text-muted-foreground">No pending help requests. Stay online to receive alerts.</p>
                     </CardContent>
                   </Card>
                 )}
               </section>
 
-              {/* Session History */}
               <section id="history">
                 <HelperSessionHistory />
               </section>
             </div>
 
-            {/* Right Column - Rewards, Leaderboard & Settings */}
             <div className="space-y-4">
               <section id="rewards">
                 <VolunteerRewards />

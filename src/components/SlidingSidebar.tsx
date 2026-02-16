@@ -1,27 +1,9 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-  Home,
-  Shield,
-  Bell,
-  Settings,
-  Map,
-  Phone,
-  Menu,
-  LogIn,
-  LogOut,
-  User,
-  MapPin,
-  Mic,
-  Navigation,
-  CheckCircle2,
-  Award,
-  BarChart3,
-  Heart,
-  FileAudio,
-  AlertTriangle,
-  History,
-  Clock,
+  Home, Shield, Bell, Settings, Map, Phone, Menu, LogIn, LogOut, User,
+  MapPin, Mic, Navigation, CheckCircle2, Award, BarChart3, Heart,
+  FileAudio, AlertTriangle, History, FileText, Sliders,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -39,7 +21,7 @@ interface NavItem {
 
 const userNavItems: NavItem[] = [
   { label: 'Dashboard', icon: Home, href: '/', section: 'main' },
-  { label: 'Safety Map', icon: Map, href: '/#map', section: 'safety' },
+  { label: 'Live Map', icon: Map, href: '/#map', section: 'safety' },
   { label: 'Live Location', icon: MapPin, href: '/#location', section: 'safety' },
   { label: 'Safety Check-In', icon: CheckCircle2, href: '/#checkin', section: 'safety' },
   { label: 'Audio Recorder', icon: Mic, href: '/#record', section: 'safety' },
@@ -51,6 +33,7 @@ const userNavItems: NavItem[] = [
   { label: 'Analytics', icon: BarChart3, href: '/#analytics', section: 'insights' },
   { label: 'Notifications', icon: Bell, href: '/notifications', section: 'account' },
   { label: 'Settings', icon: Settings, href: '/settings', section: 'account' },
+  { label: 'Documentation', icon: FileText, href: '/documentation', section: 'account' },
 ];
 
 const helperNavItems: NavItem[] = [
@@ -58,9 +41,12 @@ const helperNavItems: NavItem[] = [
   { label: 'Requests Map', icon: Map, href: '/#map', section: 'main' },
   { label: 'Active Requests', icon: AlertTriangle, href: '/#requests', section: 'main' },
   { label: 'My Rewards', icon: Award, href: '/#rewards', section: 'main' },
+  { label: 'Leaderboard', icon: BarChart3, href: '/#leaderboard', section: 'main' },
   { label: 'Session History', icon: History, href: '/#history', section: 'main' },
+  { label: 'Helper Settings', icon: Sliders, href: '/#settings', section: 'account' },
   { label: 'Notifications', icon: Bell, href: '/notifications', section: 'account' },
   { label: 'Settings', icon: Settings, href: '/settings', section: 'account' },
+  { label: 'Documentation', icon: FileText, href: '/documentation', section: 'account' },
 ];
 
 const SlidingSidebar = () => {
@@ -109,9 +95,7 @@ const SlidingSidebar = () => {
             onClick={() => handleNavClick(item.href)}
             className={cn(
               'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-sm w-full text-left',
-              active
-                ? 'bg-primary text-primary-foreground font-medium'
-                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+              active ? 'bg-primary text-primary-foreground font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
             )}
           >
             <Icon className="w-4 h-4 shrink-0" />
@@ -127,9 +111,7 @@ const SlidingSidebar = () => {
           to={item.href}
           className={cn(
             'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-sm',
-            active
-              ? 'bg-primary text-primary-foreground font-medium'
-              : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+            active ? 'bg-primary text-primary-foreground font-medium' : 'text-muted-foreground hover:bg-muted hover:text-foreground'
           )}
         >
           <Icon className="w-4 h-4 shrink-0" />
@@ -142,11 +124,7 @@ const SlidingSidebar = () => {
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="fixed top-3 left-3 z-50 bg-card/90 backdrop-blur-sm shadow-md border border-border hover:bg-accent"
-        >
+        <Button variant="ghost" size="icon" className="fixed top-3 left-3 z-50 bg-card/90 backdrop-blur-sm shadow-md border border-border hover:bg-accent">
           <Menu className="w-5 h-5" />
         </Button>
       </SheetTrigger>
@@ -225,8 +203,7 @@ const SlidingSidebar = () => {
               </div>
               <SheetClose asChild>
                 <Button variant="outline" className="w-full" onClick={() => signOut()}>
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Sign Out
+                  <LogOut className="w-4 h-4 mr-2" /> Sign Out
                 </Button>
               </SheetClose>
             </div>
@@ -234,8 +211,7 @@ const SlidingSidebar = () => {
             <SheetClose asChild>
               <Link to="/auth">
                 <Button className="w-full">
-                  <LogIn className="w-4 h-4 mr-2" />
-                  Sign In
+                  <LogIn className="w-4 h-4 mr-2" /> Sign In
                 </Button>
               </Link>
             </SheetClose>
