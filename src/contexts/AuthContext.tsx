@@ -21,23 +21,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     let isMounted = true;
 
-    // Set up auth state listener FIRST (for ONGOING changes - does NOT control loading)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!isMounted) return;
-        
-        // Only synchronous state updates here
         setSession(session);
         setUser(session?.user ?? null);
       }
     );
 
-    // THEN check for existing session (INITIAL load - controls loading)
     const initializeAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!isMounted) return;
-
         setSession(session);
         setUser(session?.user ?? null);
       } finally {
@@ -74,7 +69,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
-    // Clear cached role and session data before signing out
+    // Clear cached role from localStorage
+    localStorage.removeItem('safeher_role_cache');
     sessionStorage.removeItem('safeher_role_cache');
     await supabase.auth.signOut();
     sessionStorage.clear();

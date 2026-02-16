@@ -90,7 +90,7 @@ const Index = () => {
     return role === 'helper' ? <HelperDashboard /> : <UserDashboard />;
   }
 
-  // Still loading role from DB
+  // Still loading role from DB (only if no cache)
   if (roleLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">

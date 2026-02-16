@@ -13,9 +13,10 @@ interface UseUserRoleReturn {
 
 const ROLE_CACHE_KEY = 'safeher_role_cache';
 
+// Use localStorage instead of sessionStorage to persist across reloads
 const getCachedRole = (userId: string): UserRole | null => {
   try {
-    const cached = sessionStorage.getItem(ROLE_CACHE_KEY);
+    const cached = localStorage.getItem(ROLE_CACHE_KEY);
     if (cached) {
       const parsed = JSON.parse(cached);
       if (parsed.userId === userId && parsed.role) {
@@ -29,9 +30,9 @@ const getCachedRole = (userId: string): UserRole | null => {
 const setCachedRole = (userId: string, role: UserRole | null) => {
   try {
     if (role) {
-      sessionStorage.setItem(ROLE_CACHE_KEY, JSON.stringify({ userId, role }));
+      localStorage.setItem(ROLE_CACHE_KEY, JSON.stringify({ userId, role }));
     } else {
-      sessionStorage.removeItem(ROLE_CACHE_KEY);
+      localStorage.removeItem(ROLE_CACHE_KEY);
     }
   } catch {}
 };
@@ -45,13 +46,11 @@ export const useUserRole = (): UseUserRoleReturn => {
     return null;
   });
   const [loading, setLoading] = useState(true);
-  const [fetched, setFetched] = useState(false);
 
   const fetchRole = useCallback(async () => {
     if (!user) {
       setRoleState(null);
       setLoading(false);
-      setFetched(true);
       return;
     }
 
@@ -75,11 +74,9 @@ export const useUserRole = (): UseUserRoleReturn => {
       setCachedRole(user.id, fetchedRole);
     } catch (error) {
       console.error('Error fetching user role:', error);
-      // Keep cached role if fetch fails
       if (!cached) setRoleState(null);
     } finally {
       setLoading(false);
-      setFetched(true);
     }
   }, [user]);
 

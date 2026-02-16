@@ -9,7 +9,6 @@ import JourneyTracker from '@/components/JourneyTracker';
 import AISafetyAssistant from '@/components/AISafetyAssistant';
 import CheckInSystem from '@/components/CheckInSystem';
 import SafetyAnalyticsDashboard from '@/components/SafetyAnalyticsDashboard';
-import SafetyMapReal from '@/components/SafetyMapReal';
 import NearbyPlacesMap from '@/components/NearbyPlacesMap';
 import GoogleMapsProvider from '@/components/GoogleMapsProvider';
 import OfflineIndicator from '@/components/OfflineIndicator';
@@ -19,6 +18,7 @@ import UserRequestHelpCard from '@/components/volunteer/UserRequestHelpCard';
 import UserHelperTracker from '@/components/volunteer/UserHelperTracker';
 import SlidingSidebar from '@/components/SlidingSidebar';
 import AudioEvidenceViewer from '@/components/AudioEvidenceViewer';
+import LiveTrackingMap from '@/components/tracking/LiveTrackingMap';
 import useGeolocation from '@/hooks/useGeolocation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEmergencyContacts } from '@/hooks/useEmergencyContacts';
@@ -50,15 +50,10 @@ const UserDashboard = () => {
     toast.error('🚨 SOS Triggered via Gesture/Voice!', {
       description: 'Emergency alert initiated'
     });
-    setTimeout(() => {
-      sosTriggeredRef.current = false;
-    }, 10000);
+    setTimeout(() => { sosTriggeredRef.current = false; }, 10000);
   };
 
-  useShakeDetection({
-    onShake: handleSOSTrigger,
-    enabled: settings.shake_to_sos && !!user
-  });
+  useShakeDetection({ onShake: handleSOSTrigger, enabled: settings.shake_to_sos && !!user });
 
   const { startListening, isListening, isSupported: voiceSupported } = useVoiceActivation({
     onTrigger: handleSOSTrigger,
@@ -67,21 +62,15 @@ const UserDashboard = () => {
   });
 
   useEffect(() => {
-    if (settings.voice_activation && voiceSupported && user) {
-      startListening();
-    }
+    if (settings.voice_activation && voiceSupported && user) startListening();
   }, [settings.voice_activation, voiceSupported, user, startListening]);
 
   useEffect(() => {
     if (mainRef.current) {
-      gsap.fromTo(mainRef.current,
-        { opacity: 0 },
-        { opacity: 1, duration: 0.5, ease: "power2.out" }
-      );
+      gsap.fromTo(mainRef.current, { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.out" });
     }
   }, []);
 
-  // If there's an active help session, show the full-screen tracker
   if (activeSession) {
     return (
       <GoogleMapsProvider>
@@ -99,7 +88,6 @@ const UserDashboard = () => {
         <SlidingSidebar />
         
         <main ref={mainRef} className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 pt-16">
-          {/* Voice activation indicator */}
           {isListening && (
             <div className="mb-4 p-3 bg-success/10 border border-success/20 rounded-lg flex items-center gap-2">
               <div className="w-3 h-3 bg-success rounded-full animate-pulse" />
@@ -107,41 +95,43 @@ const UserDashboard = () => {
             </div>
           )}
 
-          {/* Page Header */}
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-foreground">Safety Dashboard</h1>
             <p className="text-muted-foreground text-sm">Your personal safety command center</p>
           </div>
 
-          {/* SOS Section - Full Width */}
+          {/* SOS - Full Width */}
           <section id="sos" className="bg-card rounded-2xl border border-border p-4 sm:p-6 shadow-card mb-4">
             <div className="text-center mb-4">
               <h2 className="text-xl font-bold text-foreground mb-1">Emergency SOS</h2>
-              <p className="text-muted-foreground text-xs">
-                Hold the button for 2 seconds to trigger alert
-              </p>
+              <p className="text-muted-foreground text-xs">Hold the button for 2 seconds to trigger alert</p>
             </div>
             <div className="flex justify-center">
               <SOSButton location={location} contacts={formattedContacts} />
             </div>
           </section>
 
-          {/* Looking for Volunteers - directly under SOS */}
           <section id="help" className="mb-4">
             <UserRequestHelpCard />
           </section>
 
-          {/* Quick Actions */}
           <div className="mb-4">
             <QuickActions location={location} />
           </div>
 
-          {/* Two column layout for desktop */}
+          {/* Two column layout */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            
-            {/* Left Column */}
             <div className="space-y-4">
-              {/* Live Location */}
+              {/* Integrated Live Tracking Map */}
+              <section id="map">
+                <LiveTrackingMap
+                  myLocation={location}
+                  title="My Live Location"
+                  height="300px"
+                  showDistance={false}
+                />
+              </section>
+
               <section id="location">
                 <LiveLocation 
                   location={location} 
@@ -151,59 +141,41 @@ const UserDashboard = () => {
                 />
               </section>
 
-              {/* Safety Check-In */}
               <section id="checkin">
                 <CheckInSystem location={location} />
               </section>
 
-              {/* Audio Recorder with Evidence Viewer */}
               <section id="record" className="space-y-4">
                 <AudioRecorderComponent location={location} contacts={formattedContacts} />
                 <AudioEvidenceViewer />
               </section>
 
-              {/* Journey Tracker */}
               <section id="journey">
                 <JourneyTracker location={location} contacts={formattedContacts} />
               </section>
 
-              {/* Emergency Contacts */}
               <section id="contacts" className="bg-card rounded-2xl border border-border p-4 shadow-card">
-                <ContactsManager 
-                  contacts={formattedContacts} 
-                  setContacts={() => {}}
-                />
+                <ContactsManager contacts={formattedContacts} setContacts={() => {}} />
               </section>
             </div>
 
-            {/* Right Column */}
             <div className="space-y-4">
-              {/* Safety Map */}
-              <section id="map">
-                <SafetyMapReal location={location} />
-              </section>
-
-              {/* AI Safety Assistant */}
               <section id="ai" className="bg-card rounded-2xl border border-border p-4 shadow-card">
                 <AISafetyAssistant location={location} />
               </section>
 
-              {/* Analytics Dashboard */}
               <section id="analytics">
                 <SafetyAnalyticsDashboard />
               </section>
 
-              {/* Nearby Places */}
               <section id="nearby">
                 <NearbyPlacesMap location={location} />
               </section>
 
-              {/* Emergency Numbers */}
               <section id="numbers">
                 <EmergencyNumbers />
               </section>
 
-              {/* Safety Tips */}
               <section id="tips">
                 <SafetyTips />
               </section>
